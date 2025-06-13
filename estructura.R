@@ -1,4 +1,5 @@
 ##ESTRUCTURA DEL INFORME DE ESTADÍSTICAS DE LA PAM
+# Jorge Suárez, María Belmonte.
 
 #1. Estadísticas nacionales generales
 #1.1. Estadísticas regionales generales
