@@ -15,7 +15,6 @@ glimpse(df)
 temp <- as.Date(df$FECHA_CIERRE, format="%d/%m/%y")
 format(temp, format='%d-%m-%Y')
 
-
 # Generar tablas
 table(df$CCAA)
 
