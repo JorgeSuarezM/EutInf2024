@@ -1,5 +1,4 @@
 ##ESTRUCTURA DEL INFORME DE ESTADÍSTICAS DE LA PAM
-# PRUEBA de Rosa
 
 #1. Estadísticas nacionales generales
 #1.1. Estadísticas regionales generales
