@@ -1,7 +1,7 @@
 ##ESTRUCTURA DEL INFORME DE ESTADÍSTICAS DE LA PAM
 
 #1. Estadísticas nacionales generales
-HOLA AAAAAAAAAAAA
+
 #1.1. Estadísticas regionales generales
 #1.1.1. Número de denegaciones
 #1.1.2. Tasas de mortalidad por PAM (por nº fallecimientos totales de la region/por 1000 habitantes)
