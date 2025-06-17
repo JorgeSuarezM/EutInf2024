@@ -50,5 +50,5 @@ tab1<-df %>%
 
 # Exportar la tabla a HTML
 tab1 %>%
-  gtsave("tablas/tab1_ej.html")
+  gtsave("figuras/tab1_ej.html")
 
