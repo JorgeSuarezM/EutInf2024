@@ -1,20 +1,3 @@
-#Script de pruebas
-library(tidyverse)
-library(gt)
-
-# Randomizar datos
-#df_socio<-sample_n(df[,c(1, 4:7)], 200)
-#df_fecha<-sample_n(df[, -c(1, 4:7)], 200)
-#df<-cbind(df_socio, df_fecha)
-
-# Cargar los datos
-df<-read.csv("data_sim.csv")
-glimpse(df)
-
-# Formato de fecha
-temp <- as.Date(df$FECHA_CIERRE, format="%d/%m/%y")
-format(temp, format='%d-%m-%Y')
-
 # Generar tablas
 table(df$CCAA)
 
