@@ -20,7 +20,8 @@
 ## Solicitudes por enfermedad de base entre 2021 y 2024
 ## Solicitudes por tramo de edad y enfermedad de base
 ## Solicitudes por informe favorable/desfavorable MR e informe favorable/desfavorable MC (filas 3 a 8 de excel 1)
-## Tasa de solicitudes de PAM (entre total población por C.A. y total nacional)
+## Nº de solicitudes en las que el médico/a responsable ha adelantado la tramitación de la segunda solicitud, por considerar que la pérdida de la capacidad de la persona solicitante para otorgar el consentimiento informado es inminente (plazo menor de 15 días
+## Tasa de solicitudes de PAM nacionales y por comunidad autónoma por millón de habitantes
 
 
 
