@@ -1,71 +1,109 @@
 ##ESTRUCTURA DEL INFORME DE ESTADÍSTICAS DE LA PAM
 
-#1. Estadísticas nacionales generales
-
-#1.1. Estadísticas regionales generales
-#1.1.1. Número de denegaciones
-#1.1.2. Tasas de mortalidad por PAM (por nº fallecimientos totales de la region/por 1000 habitantes)
-
-
-#2. Estadísticas relativas a las solicitudes de la PAM 
-#2.1. Frecuencias de solicitudes por comunidades autónomas (disponible en borrador)
-#2.2. Evolución de frecuencias de solicitudes por años 2021-24 (disponible en borrador)
-#2.2.1. Iniciadas por primera solicitud
-#2.2.2.Iniciadas por Instrucciones Previas
-#2.3. Frecuencias de solicitudes por tramos de edad (disponible en borrador)
-#2.4. Frecuencias de solicitudes por comunidad autónoma y sexo (disponible en borrador)
-#2.5. Frecuencias de solicitudes por enfermedad de base (disponible en borrador)
-#2.6. Evolución de frecuencias de solicitudes por enfermedad de base y por año 2021-24 (disponible en borrador)
-#2.7. Frecuencias de solicitudes por capacidad del solicitante y comunidad autónoma (disponible en borrador)
-#2.8. Estadísticas relativas a CC.AA
-#2.8.1. Número de PAM revocadas por C. A. 
-#2.8.2. Número de PAM aplazadas por C. A. 
-#2.8.3. Número de PAM denegadas por C. A. (creo que debería ir en #1)
-#2.8.4. Número de PAM finalizadas por fallecimiento de la persona solicitante durante la tramitación del procedimiento por C. A. 
+#2. ESTADÍSTICAS GENERALES DE LA PAM
+## Nº solicitudes por C.A 
+## Nº denegaciones por C.A
+## Nº revocaciones por C.A
+## Nº aplazamientos por C.A
+## Nº fallecidos durante la tramitación por C.A
+## Tasas de mortalidad por PAM (entre total fallecidos por C.A. y total nacional)
+## Tasa de mortalidad nacional por PAM por total habitatantes
+## Relación entre las resoluciones alcanzadas en 2024 y las solicitudes que las originan.
+## Esquema (figura, diagrama de flujos) general del procedimiento: entradas (solicitudes) y resultados de cada filtro (MR, MC, CGyE), con los fallecimientos, denegaciones, revocaciones y prestaciones definitivas.
 
 
-#3. Análisis de las prestaciones realizadas
-#3.1.Frecuencias de prestaciones por comunidades autónomas (disponible en borrador).
-#3.1.1. Relación solicitudes / prestaciones por comunidades autónomas de forma absoluta y con porcentajes (disponible en borrador, puede ser engañoso, tener en cuenta nuestra redacción por año natural)
-#3.1.2. Evolución de frecuencias de prestaciones por años 2021-24 (disponible en borrador).
-#3.1.2.1. Modalidad 1: Intravenosa
-#3.1.2.2. Modalidad 2: Oral
-#3.1.3. Evolución de frecuencias de fallecimiento durante el trámite por años 2021-24 (disponible en borrador).
-#3.1.4. Perfil del solicitante por sexo, edad, enfermedad de base (e incluso lugar_prestación se puede) (valorar si lo metemos en el resumen inicial)
-#3.1.5. Perfil del que se le concede por sexo, edad, enfermedad de base (e incluso lugar_prestación se puede) (valorar si lo metemos en el resumen inicial)
-#3.2. Aspectos clínicos y de actuación del personal sanitario
-#3.2.1. Frecuencia de prestaciones por lugar de la prestación (disponible total y por c.a.) (disponible en borrador).
-#3.2.1.1. Privado vs público
-#3.2.1.2. Domicilio vs instituciones sociosanitarias vs hospital vs centros no hospitalarios
-#3.2.2.Frecuencia de prestaciones por modalidad (disponible total y por c.a.) (disponible en borrador).
-#3.2.2.1. Administración por sanitarios vs Auto-Administración oral vs Auto-Administración intravenosa vs Auto-Administración sin distinción por tipo de vía
-#3.2.3. Frecuencia de prestaciones por especialidad del MR y el MC (también por c.a.)
+
+#3. SOLICITUDES DE LA PAM
+## Solicitudes por comunidad autónoma y sexo, con columna de total para ambas variables
+## Solicitudes por modalidad de inicio (5.1/5.2): primera solicitud o instrucciones previas, designando o no un interlocutor, entre 2021 y 2024,
+## Solicitudes por modalidad de inicio (5.1/5.2): primera solicitud o instrucciones previas, designando o no un interlocutor, por C.A.
+## Solicitudes por enfermedad de base entre 2021 y 2024
+## Solicitudes por tramo de edad y enfermedad de base
+## Solicitudes por informe favorable/desfavorable MR e informe favorable/desfavorable MC (filas 3 a 8 de excel 1)
+## Tasa de solicitudes de PAM (entre total población por C.A. y total nacional)
 
 
-#4. Plazos y procedimientos de la tramitación
-#4.1. Frecuencia de aplazamientos de la prestación por comunidad autónoma (disponible en borrador).
-#4.2. Frecuencia de denegaciones de la prestación por instancia -MR, MC o CGyE- (disponible en borrador).
-#4.3. Frecuencia de revocaciones por C.A (disponible en borrador).
-#4.4. Frecuencia de fallecidos durante el trámite por C.A. (disponible en borrador).
-#4.5. Frecuencia de fallecidos durante el trámite por patología causante (enfermedad de base/otra) y por patología inicial (disponible en borrador).
-#4.6. Frecuencia de fallecidos durante el trámite por sexo.
-#4.7. Frecuencia de fallecidos durante el trámite por edad.
-#4.8. Frecuencia de fallecidos durante el trámite por el momento de la tramitación en el que se quedó.
-#4.9. Frecuencia de solicitudes en proceso ??? (disponible en borrador, preguntado al Ministerio).
-#4.10. Frecuencia de reclamaciones ante la CGyE (está por C.A) (disponible en borrador).
-#4.11. Frecuencia de reclamaciones ante la jurisdicción contencioso-administrativa (está por c.a.) (disponible en borrador).
-#4.12. Media y mediana de tiempo entre 1ª solicitud y prestación por años 2021-24 por C.A. (disponible en borrador).
-#4.13. Media y mediana de tiempo entre 1ª solicitud y la aceptación de la prestación por la CGyE por años 2021-24 por C.A. (disponible en borrador).
-#4.14. Media y mediana de tiempo entre 1ª solicitud y 2ª solicitud por años 2021-24 por C.A. (disponible en borrador).
-#4.15. Media y mediana de tiempo entre 2ª solicitud e informe MC por años 2021-24 por C.A. (disponible en borrador).
-#4.16. Media y mediana de tiempo entre informe MC y resolución de CGyE por años 2021-24 por C.A. (disponible en borrador).
-#4.17. Media y mediana de tiempo entre resolución de CGyE y la prestación por años 2021-24 por C.A. (disponible en borrador).
-#4.18. Media y mediana de tiempo entre la reclamación a la CGyE y la respuesta por años 2021-24 por C.A. (disponible en borrador).
-#4.19. Media y mediana de tiempo entre que se inicia la tramitación y se produce la muerte (antes de la prestación) por C.A.
+
+#4. PRESTACIONES DE LA PAM
+#4.1. CARACTERÍSTICAS DE LA PERSONA SOLICITANTE
+## Prestaciones por C.A y sexo
+## Prestaciones por tramo de edad
+## Prestaciones por enfermedad de base y año 2021-24
+## Relación prestaciones / solicitudes por comunidades autónomas de forma absoluta y con porcentajes 
+## Tasa de prestaciones (entre total fallecimientos por C.A. y total nacional)
+
+#4.2. ASPECTOS CLÍNICOS Y DE ACTUACIÓN DEL PERSONAL SANITARIO
+## Prestaciones por modalidad y año 2021-24
+## Lugar de realización de la prestación por comunidad autónoma
+## Ámbito público o privado por comunidad autónoma
+## Tasa de prestaciones en ámbito público/privado
+## Tasa de prestaciones en domicilio
 
 
-#5. Estadísticas relacionadas con la donación de órganos post-PAM (sintetizar de forma vistosa)
-#5.1. Frecuencia de donantes tras la PAM por años 2021-24 por C.A. (disponible en borrador).
-#5.2. Frecuencia de órganos extraídos tras la PAM por años 2021-24 por C.A. (disponible en borrador).
-#5.3. Frecuencia de órganos trasplantados tras la PAM por años 2021-24 por C.A. (disponible en borrador).
-#5.4. Frecuencia de personas trasplantadas tras la PAM por años 2021-24 por C.A. (disponible en borrador).
+
+#5. DENEGACIONES DE LA PAM
+## Comunidad autónoma y sexo
+## Enfermedad de base y año 2021-24
+## Enfermedad de base y comunidad autónoma
+## Tramo de edad
+## Denegaciones de MR respecto a denegaciones totales (excel 1)
+## Denegaciones de MC respecto a denegaciones totales (excel 1)
+## Denegaciones de CGyE respecto a denegaciones totales (excel 1)
+## Tasa de autorización de la CGyE
+
+#5.1. RECLAMACIONES DE LA PAM
+## Reclamaciones por instancia ante la que se presenta: CGyE vs jurisdicción contencioso-administrativa (borrador).
+## Reclamaciones por resolución de la CGyE: favorable o desfavorable por comunidad autónoma
+
+
+
+#6. FALLECIMIENTOS DURANTE LA TRAMITACIÓN DE LA PAM
+## Fallecimientos por comunidad autónoma y sexo
+## Fallecimientos por tramo de edad
+## Fallecimientos por enfermedad de base y año 2021-24
+## Fallecimientos por tipo de enfermedad
+## Media y mediana de días desde el inicio de la tramitación hasta el fallecimiento por comunidad autónoma
+## Tasa de fallecimientos según fase del trámite respecto a solicitudes totales
+
+
+
+#7. REVOCACIONES DE LA PAM
+## Revocaciones por comunidad autónoma y sexo
+## Revocaciones por enfermedad de base y año 2021-24
+## Revocaciones por tramo de edad
+## Revocaciones por fase del proceso
+## Tasa solicitudes/revocaciones
+
+
+
+#8. PLAZOS Y PROCEDIMIENTOS DE LA TRAMITACIÓN
+#8.1. ROL DE LOS PROFESIONALES SANITARIOS: MC Y MR
+## Especialidad del MR y comunidad autónoma
+## Especialidad del MC y comunidad autónoma
+
+#8.2. DATOS SOBRE OBJECIÓN DE CONCIENCIA
+
+#8.3. TIEMPOS DEL PROCEDIMIENTO
+## Media y mediana de tiempo entre 1ª solicitud y 2ª solicitud por años 2021-24.
+## Media y mediana de tiempo entre 2ª solicitud e informe MC por años 2021-24 (borrador).
+## Media y mediana de tiempo entre informe MC y resolución de CGyE por años 2021-24 (borrador).
+## Media y mediana de tiempo entre resolución de CGyE y la prestación por años 2021-24 (borrador).
+## Media y mediana de tiempo entre la reclamación a la CGyE y la respuesta por años 2021-24 (borrador).
+
+#8.4. APLAZAMIENTOS DE LA PRESTACIÓN
+## Aplazamientos por comunidad autónoma
+## Aplazamientos por años 2021-24
+## Aplazamientos por tramos de edad
+## Aplazamientos por sexo
+## Aplazamientos por enfermedad de base
+## Aplazamientos por momento del trámite????
+## Tasas de aplazamientos por solicitud aceptada por CGyE.
+## Tasa de aplazamientos por solicitudes totales por C.A. 
+
+
+
+#9. ESTADÍSTICAS RELACIONADAS CON LA DONACIÓN DE ÓRGANOS POST-PAM (sintetizar de forma vistosa)
+## Frecuencia de donantes tras la PAM por años 2021-24 por C.A. (disponible en borrador).
+## Frecuencia de órganos extraídos tras la PAM por años 2021-24 por C.A. (disponible en borrador).????
+## Frecuencia de órganos trasplantados tras la PAM por años 2021-24 por C.A. (disponible en borrador).????
+## Frecuencia de personas trasplantadas tras la PAM por años 2021-24 por C.A. (disponible en borrador).????
