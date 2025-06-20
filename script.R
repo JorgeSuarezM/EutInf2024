@@ -1,5 +1,5 @@
 # Generar tablas
-table(df$CCAA)
+t<-table(df$CCAA)
 
 # Crear una tabla con el número de solicitudes por CCAA
 tab1<-df %>%
@@ -9,7 +9,7 @@ tab1<-df %>%
   gt() %>%
   tab_header( # Añadir título y subtítulo
     title = "Número de solicitudes de PAM",
-    subtitle = glue::glue("Por Comunidad Autónoma")
+    subtitle = "Por Comunidad Autónoma"
   ) %>%
   tab_spanner( # Añadir spanner para las columnas
     label = "Resultados",
@@ -31,6 +31,4 @@ tab1<-df %>%
   )
 
 # Exportar la tabla a HTML
-tab1 %>%
-  gtsave("figuras/tab1_ej.html")
-
+gtsave(tab1, "tablas/tab1_ej.html")
