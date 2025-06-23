@@ -32,3 +32,4 @@ tab1<-df %>%
 
 # Exportar la tabla a HTML
 gtsave(tab1, "tablas/tab1_ej.html")
+
