@@ -1,21 +1,5 @@
-"CCAA","Administración.directa.por.el.equipo.sanitario","Autoadministración.sin.distinción.por.vía.de.administración","Autoadministración.por.vía.oral","Autoadministración.por.vía.intravenosa"
-"ANDALUCÍA",29,0,0,0
-"ARAGÓN",8,0,0,0
-"ASTURIAS, PRINCIPADO DE",5,0,0,0
-"BALEARS, ILLES",15,0,0,0
-"CANARIAS",25,0,0,0
-"CANTABRIA",3,0,0,0
-"CASTILLA-LA MANCHA",8,0,0,0
-"CASTILLA Y LEÓN",15,0,0,0
-"CATALUÑA",142,0,0,0
-"COMUNITAT VALENCIANA",14,1,0,1
-"EXTREMADURA",4,0,0,0
-"GALICIA",17,0,0,0
-"MADRID, COMUNIDAD DE",59,0,0,0
-"MURCIA, REGIÓN DE",3,0,0,0
-"NAVARRA, COMUNIDAD FORAL DE",14,0,0,0
-"PAIS VASCO",49,0,0,0
-"RIOJA, LA",6,0,0,0
-"CEUTA, CIUDAD AUTÓNOMA",0,0,0,0
-"MELILLA, CIUDAD AUTÓNOMA",0,0,0,0
-"Total",416,1,0,1
+﻿Modalidad;ANDALUCÍA;ARAGÓN;ASTURIAS, PRINCIPADO DE;BALEARS, ILLES;CANARIAS;CANTABRIA;CASTILLA-LA MANCHA;CASTILLA Y LEÓN;CATALUÑA;COMUNITAT VALENCIANA;EXTREMADURA;GALICIA;MADRID, COMUNIDAD DE;MURCIA, REGIÓN DE;NAVARRA, COMUNIDAD FORAL DE;PAIS VASCO;RIOJA, LA;CEUTA, CIUDAD AUTÓNOMA;MELILLA, CIUDAD AUTÓNOMA
+Administración directa por el equipo sanitario ;29;8;5;15;25;3;8;15;142;14;4;17;59;3;14;49;6;0;0
+Autoadministración sin distinción por vía de administración;0;0;0;0;0;0;0;0;0;1;0;0;0;0;0;0;0;0;0
+Autoadministración por vía oral;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0
+Autoadministración por vía intravenosa;0;0;0;0;0;0;0;0;0;1;0;0;0;0;0;0;0;0;0
