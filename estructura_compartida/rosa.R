@@ -280,6 +280,8 @@ gtsave(tab5_8, "tablas/tab5_8.html")
 
 
 
+
+
 #6. FALLECIMIENTOS DURANTE LA TRAMITACIÓN DE LA PAM
 ## 6.1. Fallecimientos por comunidad autónoma y sexo
 tab6_1<-df %>%
@@ -303,6 +305,8 @@ tab6_1<-df %>%
 gtsave(tab6_1, "tablas/tab6_1.html")
 
 ## 6.2. Fallecimientos por tramo de edad _ datos brutos
+
+
 
 
 
