@@ -33,8 +33,15 @@ write_csv(df_reformateado, "Modalidad_por_CCAA.csv")
 tabla4_2_1 <- df_reformateado %>%
   gt() %>%
   tab_header(
-    title = "Número de prestaciones de la ayuda para morir",
-    subtitle = "Por comunidad autónoma y modalidad"
+    title = "Prestaciones por modalidad",
+    subtitle = "Por comunidad autónoma"
+  ) %>%
+  cols_label(
+    CCAA = "Comunidad Autónoma",
+    `Administración directa por el equipo sanitario ` = "Administración directa",
+    `Autoadministración sin distinción por vía de administración` = "Autoadministración sin distinción",
+    `Autoadministración por vía oral` = "Autoadministración vía oral",
+    `Autoadministración por vía intravenosa` = "Autoadministración vía intravenosa",
   ) %>%
   tab_source_note(
     source_note = "Fuente: Datos oficiales sobre prestaciones de PAM."
@@ -82,8 +89,8 @@ write_csv(df_reformateado, "Lugar_prestacion_por_CCAA.csv")
 tabla4_2_2 <- df_reformateado %>%
   gt() %>%
   tab_header(
-    title = "Número de prestaciones de la ayuda para morir",
-    subtitle = "Por comunidad autónoma y lugar de prestación"
+    title = "Lugar de realización de la prestación",
+    subtitle = "Por comunidad autónoma"
   ) %>%
   cols_label(
     CCAA = "Comunidad Autónoma",
@@ -135,8 +142,8 @@ write_csv(df_reformateado, "Ambito_por_CCAA.csv")
 tabla4_2_3 <- df_reformateado %>%
   gt() %>%
   tab_header(
-    title = "Número de prestaciones de la ayuda para morir",
-    subtitle = "Por comunidad autónoma y ámbito"
+    title = "Ámbito público o privado",
+    subtitle = "Por comunidad autónoma"
   ) %>%
   cols_label(
     CCAA = "Comunidad Autónoma",
@@ -243,10 +250,10 @@ gtsave(tabla4_2_5, "tablas/tabla4_2_5.html")
 ## 5.2. Enfermedad de base y año 2021-24
 ## 5.3. Enfermedad de base y comunidad autónoma
 ## 5.4. Tramo de edad
-## Denegaciones de MR respecto a denegaciones totales (excel 1)
-## Denegaciones de MC respecto a denegaciones totales (excel 1)
-## Denegaciones de CGyE respecto a denegaciones totales (excel 1)
-## Tasa de autorización de la CGyE
+## 5.5. Denegaciones de MR respecto a denegaciones totales (excel 1)
+## 5.6. Denegaciones de MC respecto a denegaciones totales (excel 1)
+## 5.7. Denegaciones de CGyE respecto a denegaciones totales (excel 1)
+## 5.8. Tasa de autorización de la CGyE
 tab5_8 <- df %>%
     group_by(CCAA) %>%
     summarise(
@@ -278,7 +285,57 @@ gtsave(tab5_8, "tablas/tab5_8.html")
 
 ## 5.1.2. Reclamaciones por resolución de la CGyE: favorable o desfavorable por comunidad autónoma - excel 8
 
+df <- read.csv2("Reclamaciones_CGyE.csv", stringsAsFactors = FALSE)
 
+# Leer estructura
+head(df)
+str(df)
+# Cambiamos el nombre de la primera columna
+names(df)[1] <- "Reclamaciones"
+
+# Transformar formato largo
+df_largo <- df %>%
+  pivot_longer(
+    cols = -Reclamaciones,
+    names_to = "CCAA",
+    values_to = "Numero"
+  )
+# Comprobar
+head(df_largo)
+nrow(df_largo)
+
+# Reformatear para poner las CCAA como filas y el ámbito como columnas y quitar los vacíos 
+df_reformateado <- df_largo %>%
+  filter(Reclamaciones != "" & !is.na(Reclamaciones)) %>%  # quita valores vacíos o NA
+  pivot_wider(
+    names_from = Reclamaciones,
+    values_from = Numero
+  )
+
+# Guardar el archivo transformado
+library(readr)
+write_csv(df_reformateado, "Reclamaciones_CGyE_CCAA.csv")
+
+# Tabla
+tabla5_1_2 <- df_reformateado %>%
+  gt() %>%
+  tab_header(
+    title = "Reclamaciones por resolución de la CGyE",
+    subtitle = "favorable o desfavorable por comunidad autónoma"
+  ) %>%
+  cols_label(
+    CCAA = "Comunidad Autónoma",
+    `Estimatorias de la pretensión del paciente` = "Estimatorias",
+    `Desestimatorias de la pretensión del paciente` = "Desestimatorias",
+    `Reclamaciones que permanecen a la espera de una resolución` = "A la espera de resolución",
+
+  ) %>%
+  tab_source_note(
+    source_note = "Fuente: Datos oficiales sobre prestaciones de PAM."
+  )
+
+# Guardar tabla como archivo HTML
+gtsave(tabla5_1_2, "tablas/tabla5_1_2.html")
 
 
 
@@ -306,7 +363,32 @@ gtsave(tab6_1, "tablas/tab6_1.html")
 
 ## 6.2. Fallecimientos por tramo de edad _ datos brutos
 
+tab6_2<-df %>%
+  filter(Fallecimiento.durante.tramitación == 1) %>% 
+  group_by(CCAA, TRAMO_EDAD) %>%
+  summarise(n = n()) %>%
+  mutate(TRAMO_EDAD = ifelse(TRAMO_EDAD == "1-Tramo de edad (<30)", "Menores de 30 años",
+                             ifelse(TRAMO_EDAD == "2-Tramo de edad (30-39)", "Entre 30 y 39 años",
+                                ifelse(TRAMO_EDAD == "3-Tramo de edad (40-49)", "Entre 40 y 49 años",
+                                    ifelse(TRAMO_EDAD == "4-Tramo de edad (50-59)", "Entre 50 y 59 años",
+                                        ifelse(TRAMO_EDAD == "4-Tramo de edad (60-69)", "Entre 60 y 69 años",
+                                            ifelse(TRAMO_EDAD == "5-Tramo de edad (70-79)", "Entre 70 y 79 años",
+                                                ifelse(TRAMO_EDAD == "6-Tramo de edad (> 80)", "Mayores de 80 años", TRAMO_EDAD)))))))) %>% # Cambiar etiquetas de tramo de edad
 
+  gt() %>%
+  tab_header( # Añadir título y subtítulo
+    title = "Número de fallecimientos por tramo de edad",
+    subtitle = "Por Comunidad Autónoma"
+  ) %>%
+  cols_label( # Etiquetas de las columnas
+    TRAMO_EDAD = "CCAA y tramo de edad",
+    n = "Número de fallecimientos"
+  ) %>%
+  tab_source_note( # Añadir nota de la fuente
+    source_note = "Fuente: Datos simulados para el análisis de solicitudes de PAM."
+  ) 
+
+gtsave(tab6_2, "tablas/tab6_2.html")
 
 
 
@@ -372,8 +454,8 @@ write_csv(df_reformateado, "Causa_fallecimiento_por_CCAA.csv")
 tabla6_4 <- df_reformateado %>%
   gt() %>%
   tab_header(
-    title = "Número de prestaciones de la ayuda para morir",
-    subtitle = "Por comunidad autónoma y causa de fallecimiento"
+    title = "Fallecimientos por tipo de enfermedad",
+    subtitle = "Por comunidad autónoma"
   ) %>%
   tab_source_note(
     source_note = "Fuente: Datos oficiales sobre prestaciones de PAM."
