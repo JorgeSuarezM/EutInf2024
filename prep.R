@@ -22,8 +22,7 @@ Fecha.prestacion = as.Date(FECHA_PRESTACION, format="%d/%m/%y"))
 # Renombrar columnas para facilitar el uso
 # (!) Comentar con ## las líneas siguientes para evitar conflictos con las tablas ya hechas
 df<-df %>%
-rename(
-    InformeMR = Informe.favorable..médico.responsable,
+rename(InformeMR = Informe.favorable..médico.responsable,
     InformeMC = Informe.favorable.médico.consultor,
     InformeCGyE = Informe.favorable.Comisión.Garantía.y.Evaluación..CGyE.,
     FechaCGyE = Fecha.Informe.favorable.Comisión.Garantía.y.Evaluación..CGyE.,
@@ -31,12 +30,11 @@ rename(
     FechaMR = Fecha.Informe.favorable.médico.responsable,
     FechaFallecimiento = Fecha.de.Fallecimiento,
     FechaPrestacion = FECHA_PRESTACION,
-    FechaCierre = FECHA_CIERRE
-)
+    FechaCierre = FECHA_CIERRE)
 
 # Renombrar CCAA
-df<-df%>%
-mutate(CCAAor = CCAA,
+df <- df %>%
+  mutate(CCAAor = CCAA,
     CCAA = case_when(
     CCAA == "ANDALUCÍA" ~ "Andalucía",
     CCAA == "ARAGÓN" ~ "Aragón",

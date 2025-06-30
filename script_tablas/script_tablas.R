@@ -100,10 +100,12 @@ t1 <- tab1 %>%
             )
         ) %>%
         tab_source_note( # Añadir nota de la fuente
-    source_note = "Nota: Todos los porcentajes se refieren al total de solicitudes."
+    source_note = "Nota: Todos los porcentajes se dan con respecto del total de solicitudes."
   ) %>%
         gt_theme_espn()
 gtsave(t1, "script_tablas/prueba.html")
+#gtsave(t1, "script_tablas/prueba.png") #Para guardar en formato .png, aunque puede dar problemas si no se configura bien
+
 ### Tabla 2: Distribución por edad de solicitantes y beneficiarios
 
 ### Tabla 3: Distribución por enfermedad de base de solicitantes y beneficiarios
