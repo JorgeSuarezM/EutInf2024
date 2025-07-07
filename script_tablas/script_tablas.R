@@ -5,7 +5,8 @@
 ### Tabla 1: Distribución por sexo de solicitantes y beneficiarios
 t<-df %>%
 mutate(Solicitante=1,
-Beneficiario=if_else(FechaPrestacion!="", 1, 0))
+Beneficiario=if_else(!is.na(FechaPrestacion), 1, 0))
+table(df$Denegado)
 
 tab1<-t %>%
 group_by(CCAA) %>%
@@ -14,8 +15,8 @@ summarise(
   TotalSolicitantesP = round((sum(Solicitante) / nrow(t) * 100), digits=1),
   TotalPrestacionesN = sum(Beneficiario),
   TotalPrestacionesP = round((sum(Beneficiario) / nrow(t) * 100), digits=1),
-  TotalMuerteDuranteTramitacionN = sum(MuerteDuranteTramitacion),
-  TotalMuerteDuranteTramitacionP = round((sum(MuerteDuranteTramitacion) / nrow(t) * 100), digits=1),
+  TotalMuerteDuranteTramitacionN = sum(MuerteDuranteTramitacion, na.rm=T),
+  TotalMuerteDuranteTramitacionP = round((sum(MuerteDuranteTramitacion, na.rm=T) / nrow(t) * 100), digits=1),
   TotalDenegadosN = sum(Denegado, na.rm = TRUE),
   TotalDenegadosP = round((sum(Denegado, na.rm = TRUE) / nrow(t) * 100), digits=1)
 )
@@ -26,8 +27,8 @@ summarise(
     TotalSolicitantesP = round((sum(Solicitante) / nrow(t) * 100), digits=1),
     TotalPrestacionesN = sum(Beneficiario),
     TotalPrestacionesP = round((sum(Beneficiario) / nrow(t) * 100), digits=1),
-    TotalMuerteDuranteTramitacionN = sum(MuerteDuranteTramitacion),
-    TotalMuerteDuranteTramitacionP = round((sum(MuerteDuranteTramitacion) / nrow(t) * 100), digits=1),
+    TotalMuerteDuranteTramitacionN = sum(MuerteDuranteTramitacion, na.rm=T),
+    TotalMuerteDuranteTramitacionP = round((sum(MuerteDuranteTramitacion, na.rm=T) / nrow(t) * 100), digits=1),
     TotalDenegadosN = sum(Denegado, na.rm = TRUE),
     TotalDenegadosP = round((sum(Denegado, na.rm = TRUE) / nrow(t) * 100), digits=1)
 )
@@ -90,21 +91,21 @@ t1 <- tab1 %>%
             rows = 18
             )
         ) %>%
+        tab_source_note( # Añadir nota de la fuente
+            source_note = "Nota: Todos los porcentajes se dan con respecto del total de solicitudes."
+            ) %>%
         tab_style(
             style = list(
             cell_fill(color = "gray40"),
             cell_text(color = "white")
             ),
             locations = cells_body(
-            rows = 19
+            rows = 18
             )
-        ) %>%
-        tab_source_note( # Añadir nota de la fuente
-    source_note = "Nota: Todos los porcentajes se dan con respecto del total de solicitudes."
-  ) %>%
+        )  %>%
         gt_theme_espn()
 gtsave(t1, "script_tablas/prueba.html")
-#gtsave(t1, "script_tablas/prueba.png") #Para guardar en formato .png, aunque puede dar problemas si no se configura bien
+gtsave(t1, "script_tablas/prueba.png") #Para guardar en formato .png, aunque puede dar problemas si no se configura bien
 
 ### Tabla 2: Distribución por edad de solicitantes y beneficiarios
 
