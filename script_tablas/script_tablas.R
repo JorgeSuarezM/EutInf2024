@@ -88,7 +88,7 @@ t1 <- tab1 %>%
             weight = px(2)
             ),
             locations = cells_body(
-            rows = 18
+            rows = 19
             )
         ) %>%
         tab_source_note( # Añadir nota de la fuente
@@ -100,7 +100,7 @@ t1 <- tab1 %>%
             cell_text(color = "white")
             ),
             locations = cells_body(
-            rows = 18
+            rows = 19
             )
         )  %>%
         gt_theme_espn()

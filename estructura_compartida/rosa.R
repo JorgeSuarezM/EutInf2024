@@ -255,30 +255,54 @@ gtsave(tabla4_2_5, "tablas/tabla4_2_5.html")
 ## 5.7. Denegaciones de CGyE respecto a denegaciones totales (excel 1)
 ## 5.8. Tasa de autorización de la CGyE
 tab5_8 <- df %>%
-    group_by(CCAA) %>%
-    summarise(
-        Informe_favorable_CGyE = sum(Informe.favorable.Comisión.Garantía.y.Evaluación..CGyE. == 1, na.rm = TRUE),
-        Total_filas = n(),
-        Tasa_informe_favorable = Informe_favorable_CGyE / Total_filas * 100
-    ) %>%
+  group_by(CCAA) %>%
+  summarise(
+    Informe_favorable_CGyE = sum(InformeCGyE == 1, na.rm = TRUE),
+    Total_filas = n(),
+    Tasa_informe_favorable = Informe_favorable_CGyE / Total_filas * 100
+  ) %>%
+  ungroup()
 
-    gt() %>%
-    tab_header( # Añadir título y subtítulo
-        title = "Tasa de informes favorables de la Comisión de Garantía y Evaluación (CGyE)",
-        subtitle = "Por Comunidad Autónoma"
-    ) %>%
-    cols_label( # Etiquetas de las columnas
-        CCAA = "Comunidad Autónoma",
-        Informe_favorable_CGyE = "Número de informes favorables",
-        Total_filas = "Num. solicitudes",
-        Tasa_informe_favorable = "Tasa de informes favorables (%)"
-    ) %>%
-    fmt_number(
-        columns = Tasa_informe_favorable,
-        decimals = 2
+# Calcular fila total nacional
+nacional <- tab5_8 %>%
+  summarise(
+    CCAA = "Total",
+    Informe_favorable_CGyE = sum(Informe_favorable_CGyE, na.rm = TRUE),
+    Total_filas = sum(Total_filas, na.rm = TRUE),
+    Tasa_informe_favorable = Informe_favorable_CGyE / Total_filas * 100
+  )
+
+# Unir tabla principal con fila total y mostrar
+final_tab5_8 <- bind_rows(tab5_8, nacional) %>%
+  gt() %>%
+  tab_header(
+    title = "Tasa de informes favorables de la Comisión de Garantía y Evaluación (CGyE)",
+    subtitle = "Por Comunidad Autónoma"
+  ) %>%
+  cols_label(
+    CCAA = "Comunidad Autónoma",
+    Informe_favorable_CGyE = "Número de informes favorables",
+    Total_filas = "Num. solicitudes",
+    Tasa_informe_favorable = "Tasa de informes favorables (%)"
+  ) %>%
+  fmt_number(
+    columns = Tasa_informe_favorable,
+    decimals = 2
+  ) %>%
+  tab_style(
+    style = list(
+      cell_fill(color = "#E8F4FD"),
+      cell_text(weight = "bold")
+    ),
+    locations = cells_body(
+      rows = CCAA == "Total"
     )
+  ) %>%
+  tab_source_note(
+    source_note = "Fuente: Datos oficiales sobre prestaciones de PAM."
+  )
 
-gtsave(tab5_8, "tablas/tab5_8.html")
+gtsave(final_tab5_8, "tablas/tab5_8.html")
 
 #5.1. RECLAMACIONES DE LA PAM
 ## Reclamaciones por instancia ante la que se presenta: CGyE vs jurisdicción contencioso-administrativa (borrador).
@@ -341,79 +365,156 @@ gtsave(tabla5_1_2, "tablas/tabla5_1_2.html")
 
 #6. FALLECIMIENTOS DURANTE LA TRAMITACIÓN DE LA PAM
 ## 6.1. Fallecimientos por comunidad autónoma y sexo
-tab6_1<-df %>%
-  filter(Fallecimiento.durante.tramitación == 1) %>% 
+tab6_1 <- df %>%
+  filter(Fallecimiento.durante.tramitación == 1) %>%
+  mutate(
+    CCAA = trimws(as.character(CCAA)),
+    SEXO = toupper(trimws(as.character(SEXO))),
+    CCAA = ifelse(is.na(CCAA) | CCAA == "" | CCAA == "PERDIDOS", "Desconocido", CCAA),
+    SEXO = ifelse(SEXO %in% c("H", "M"), SEXO, NA)
+  ) %>%
+  filter(!is.na(SEXO)) %>%
   group_by(CCAA, SEXO) %>%
-  summarise(n = n()) %>%
+  summarise(n = n(), .groups = "drop") %>%
+  pivot_wider(names_from = SEXO, values_from = n, values_fill = 0) %>%
+  mutate(
+    H = if ("H" %in% names(.)) H else 0,
+    M = if ("M" %in% names(.)) M else 0,
+    Total = H + M
+  )
 
+# Calcular totales nacionales por sexo y total general
+nacional <- tab6_1 %>%
+  summarise(
+    CCAA = "Total",
+    H = sum(H, na.rm = TRUE),
+    M = sum(M, na.rm = TRUE),
+    Total = sum(Total, na.rm = TRUE)
+  )
+
+# Unir tabla principal con fila de totales nacionales y mostrar
+final_tab6_1 <- bind_rows(tab6_1, nacional) %>%
   gt() %>%
-  tab_header( # Añadir título y subtítulo
-    title = "Número de fallecimientos durante la tramitación de la PAM",
-    subtitle = "Por Comunidad Autónoma"
+  tab_header(
+    title = "Fallecimientos durante la tramitación de la PAM por CCAA y sexo",
+    subtitle = "Número de fallecimientos"
   ) %>%
-  cols_label( # Etiquetas de las columnas
-    SEXO = "CCAA y Sexo",
-    n = "Número de fallecimientos"
+  cols_label(
+    CCAA = "Comunidad Autónoma",
+    H = "Hombres",
+    M = "Mujeres",
+    Total = "Total"
   ) %>%
-  tab_source_note( # Añadir nota de la fuente
-    source_note = "Fuente: Datos simulados para el análisis de solicitudes de PAM."
-  ) 
+  tab_style(
+    style = list(
+      cell_fill(color = "#E8F4FD"),
+      cell_text(weight = "bold")
+    ),
+    locations = cells_body(
+      rows = CCAA == "Total"
+    )
+  ) %>%
+  tab_source_note(
+    source_note = "Fuente: Elaboración propia"
+  )
 
-gtsave(tab6_1, "tablas/tab6_1.html")
+gtsave(final_tab6_1, "tablas/tab6_1.html")
 
 ## 6.2. Fallecimientos por tramo de edad _ datos brutos
-
-tab6_2<-df %>%
-  filter(Fallecimiento.durante.tramitación == 1) %>% 
-  group_by(CCAA, TRAMO_EDAD) %>%
-  summarise(n = n()) %>%
-  mutate(TRAMO_EDAD = ifelse(TRAMO_EDAD == "1-Tramo de edad (<30)", "Menores de 30 años",
-                             ifelse(TRAMO_EDAD == "2-Tramo de edad (30-39)", "Entre 30 y 39 años",
-                                ifelse(TRAMO_EDAD == "3-Tramo de edad (40-49)", "Entre 40 y 49 años",
-                                    ifelse(TRAMO_EDAD == "4-Tramo de edad (50-59)", "Entre 50 y 59 años",
-                                        ifelse(TRAMO_EDAD == "4-Tramo de edad (60-69)", "Entre 60 y 69 años",
-                                            ifelse(TRAMO_EDAD == "5-Tramo de edad (70-79)", "Entre 70 y 79 años",
-                                                ifelse(TRAMO_EDAD == "6-Tramo de edad (> 80)", "Mayores de 80 años", TRAMO_EDAD)))))))) %>% # Cambiar etiquetas de tramo de edad
-
-  gt() %>%
-  tab_header( # Añadir título y subtítulo
-    title = "Número de fallecimientos por tramo de edad",
-    subtitle = "Por Comunidad Autónoma"
+tab6_2 <- df %>%
+  filter(Fallecimiento.durante.tramitación == 1) %>%
+  mutate(
+    CCAA = trimws(as.character(CCAA)),
+    TRAMO_EDAD = trimws(as.character(TRAMO_EDAD)),
+    CCAA = ifelse(is.na(CCAA) | CCAA == "" | CCAA == "PERDIDOS", "Desconocido", CCAA)
   ) %>%
-  cols_label( # Etiquetas de las columnas
-    TRAMO_EDAD = "CCAA y tramo de edad",
+  group_by(TRAMO_EDAD) %>%
+  summarise(n = n(), .groups = "drop") %>%
+  mutate(
+    TRAMO_EDAD = case_when(
+      TRAMO_EDAD == "1-Tramo de edad (<30)" ~ "Menores de 30 años",
+      TRAMO_EDAD == "2-Tramo de edad (30-39)" ~ "Entre 30 y 39 años",
+      TRAMO_EDAD == "3-Tramo de edad (40-49)" ~ "Entre 40 y 49 años",
+      TRAMO_EDAD == "4-Tramo de edad (50-59)" ~ "Entre 50 y 59 años",
+      TRAMO_EDAD == "4-Tramo de edad (60-69)" ~ "Entre 60 y 69 años",
+      TRAMO_EDAD == "5-Tramo de edad (70-79)" ~ "Entre 70 y 79 años",
+      TRAMO_EDAD == "6-Tramo de edad (> 80)" ~ "Mayores de 80 años",
+      TRUE ~ TRAMO_EDAD
+    )
+  )
+
+# Calcular fila total
+nacional_tramo <- tab6_2 %>%
+  summarise(
+    TRAMO_EDAD = "Total",
+    n = sum(n, na.rm = TRUE)
+  )
+
+# Unir tabla principal con fila total y mostrar
+final_tab6_2 <- bind_rows(tab6_2, nacional_tramo) %>%
+  gt() %>%
+  tab_header(
+    title = "Fallecimientos durante la tramitación por tramo de edad",
+    subtitle = "Total nacional"
+  ) %>%
+  cols_label(
+    TRAMO_EDAD = "Tramo de edad",
     n = "Número de fallecimientos"
   ) %>%
-  tab_source_note( # Añadir nota de la fuente
-    source_note = "Fuente: Datos simulados para el análisis de solicitudes de PAM."
-  ) 
+  tab_style(
+    style = list(
+      cell_fill(color = "#E8F4FD"),
+      cell_text(weight = "bold")
+    ),
+    locations = cells_body(
+      rows = TRAMO_EDAD == "Total"
+    )
+  ) %>%
+  tab_source_note(
+    source_note = "Fuente: Elaboración propia"
+  )
 
-gtsave(tab6_2, "tablas/tab6_2.html")
-
+gtsave(final_tab6_2, "tablas/tab6_2.html")
 
 
 
 ## 6.3. Fallecimientos por enfermedad de base y año 2021-24
+tab6_3 <- df %>%
+  filter(Fallecimiento.enfermedad.base == 1) %>%
+  group_by(CCAA, Fallecimiento.enfermedad.base) %>%
+  summarise(n = n(), .groups = "drop") %>%
+  pivot_wider(names_from = Fallecimiento.enfermedad.base, values_from = n, values_fill = 0)
 
-tab6_3<-df %>%
-  filter(Fallecimiento.enfermedad.base == 1) %>% 
-  group_by(CCAA, SEXO) %>%
-  summarise(n = n()) %>%
+# Calcular totales nacionales por enfermedad de base y total general
+nacional <- tab6_3 %>%
+  summarise(across(where(is.numeric), sum, na.rm = TRUE)) %>%
+  mutate(CCAA = "Total")
 
+# Unir tabla principal con fila de totales nacionales y mostrar
+final_tab6_3 <- bind_rows(tab6_3, nacional) %>%
   gt() %>%
-  tab_header( # Añadir título y subtítulo
-    title = "Número de fallecimientos por enfermedad de base",
+  tab_header(
+    title = "Fallecimientos por enfermedad de base",
     subtitle = "Por Comunidad Autónoma"
   ) %>%
-  cols_label( # Etiquetas de las columnas
-    SEXO = "CCAA y Sexo",
-    n = "Número de fallecimientos"
+  cols_label(
+    CCAA = "Comunidad Autónoma"
+    # Puedes añadir etiquetas personalizadas para cada enfermedad si lo deseas
   ) %>%
-  tab_source_note( # Añadir nota de la fuente
+  tab_style(
+    style = list(
+      cell_fill(color = "#E8F4FD"),
+      cell_text(weight = "bold")
+    ),
+    locations = cells_body(
+      rows = CCAA == "Total"
+    )
+  ) %>%
+  tab_source_note(
     source_note = "Fuente: Datos simulados para el análisis de solicitudes de PAM."
-  ) 
+  )
 
-gtsave(tab6_3, "tablas/tab6_3.html")
+gtsave(final_tab6_3, "tablas/tab6_3.html")
 
 ## 6.4. Fallecimientos por tipo de enfermedad - excel 12
 

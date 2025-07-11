@@ -4,30 +4,31 @@
 library(tidyverse)
 library(gt)
 library(gtExtras)
+library(dplyr)
 
 # Cargar los datos
-df<-read.csv("data.csv", fileEncoding="latin1", sep=";")
+df<-read.csv("data.csv", fileEncoding="UTF-8", sep=";")
 glimpse(df)
 
 # Establecer formato de fecha
 df<-df %>%
 mutate(FECHA_CIERRE = as.Date(FECHA_CIERRE, format="%d/%m/%y"),
 FECHA_PRESTACION = as.Date(df$FECHA_PRESTACION, format="%d/%m/%y"),
-Fecha.Informe.favorable.Comisi.n.Garant.a.y.Evaluaci.n..CGyE. = as.Date(Fecha.Informe.favorable.Comisi.n.Garant.a.y.Evaluaci.n..CGyE., format="%d/%m/%y"),
-Fecha.Informe.favorable.m.dico.consultor = as.Date(Fecha.Informe.favorable.m.dico.consultor, format="%d/%m/%y"),
-Fecha.Informe.favorable.m.dico.responsable = as.Date(Fecha.Informe.favorable.m.dico.responsable, format="%d/%m/%y"),
+Fecha.Informe.favorable.Comisión.Garantía.y.Evaluación..CGyE. = as.Date(Fecha.Informe.favorable.Comisión.Garantía.y.Evaluación..CGyE., format="%d/%m/%y"),
+Fecha.Informe.favorable.médico.consultor   = as.Date(Fecha.Informe.favorable.médico.consultor, format="%d/%m/%y"),
+Fecha.Informe.favorable.médico.responsable = as.Date(Fecha.Informe.favorable.médico.responsable, format="%d/%m/%y"),
 Fecha.de.Fallecimiento = as.Date(Fecha.de.Fallecimiento, format="%d/%m/%y"),
 Fecha.prestacion = as.Date(FECHA_PRESTACION, format="%d/%m/%y"))
 
 # Renombrar columnas para facilitar el uso
 # (!) Comentar con ## las líneas siguientes para evitar conflictos con las tablas ya hechas
 df<-df %>%
-rename(InformeMR = Informe.favorable..m.dico.responsable,
-    InformeMC = Informe.favorable.m.dico.consultor,
-    InformeCGyE = Informe.favorable.Comi1.n.Garant.a.y.Evaluaci.n..CGyE.,
-    FechaCGyE = Fecha.Informe.favorable.Comisi.n.Garant.a.y.Evaluaci.n..CGyE.,
-    FechaMC = Fecha.Informe.favorable.m.dico.consultor,
-    FechaMR = Fecha.Informe.favorable.m.dico.responsable,
+rename(InformeMR = Informe.favorable..médico.responsable,
+    InformeMC = Informe.favorable.médico.consultor,
+    InformeCGyE = Informe.favorable.Comi1ón.Garantía.y.Evaluación..CGyE.,
+    FechaCGyE = Fecha.Informe.favorable.Comisión.Garantía.y.Evaluación..CGyE.,
+    FechaMC = Fecha.Informe.favorable.médico.consultor,
+    FechaMR = Fecha.Informe.favorable.médico.responsable,
     FechaFallecimiento = Fecha.de.Fallecimiento,
     FechaPrestacion = FECHA_PRESTACION,
     FechaCierre = FECHA_CIERRE)
@@ -36,20 +37,20 @@ rename(InformeMR = Informe.favorable..m.dico.responsable,
 df <- df %>%
   mutate(CCAAor = CCAA,
     CCAA = case_when(
-    CCAA == "ANDALUCêA" ~ "Andalucía",
-    CCAA == "ARAGîN" ~ "Aragón",
+    CCAA == "ANDALUCÍA" ~ "Andalucía",
+    CCAA == "ARAGÓN" ~ "Aragón",
     CCAA == "ASTURIAS, PRINCIPADO DE" ~ "Asturias",
     CCAA == "BALEARS, ILLES" ~ "Illes Balears",
     CCAA == "CANARIAS" ~ "Canarias",
     CCAA == "CANTABRIA" ~ "Cantabria",
-    CCAA == "CASTILLA Y LEîN" ~ "Castilla y León",
+    CCAA == "CASTILLA Y LEÓN" ~ "Castilla y León",
     CCAA == "CASTILLA-LA MANCHA" ~ "Castilla-La Mancha",
-    CCAA == "CATALU\u0084A" ~ "Cataluña",
+    CCAA == "CATALUÑA" ~ "Cataluña",
     CCAA == "COMUNITAT VALENCIANA" ~ "C. Valenciana",
     CCAA == "EXTREMADURA" ~ "Extremadura",
     CCAA == "GALICIA" ~ "Galicia",
     CCAA == "MADRID, COMUNIDAD DE" ~ "Madrid",
-    CCAA == "MURCIA, REGIîN DE" ~ "Murcia",
+    CCAA == "MURCIA, REGIÓN DE" ~ "Murcia",
     CCAA == "NAVARRA, COMUNIDAD FORAL DE" ~ "Navarra",
     CCAA == "PAIS VASCO" ~ "País Vasco",
     CCAA == "RIOJA, LA" ~ "La Rioja",
@@ -69,7 +70,7 @@ df<-df %>%
 df<-df %>%
 mutate(Denegado=if_else(
     (InformeMR == 0 | InformeMC == 0 | InformeCGyE == 0) & !is.na(FechaPrestacion), 1, 0),
-    MuerteDuranteTramitacion=if_else(Fallecimiento.durante.tramitaci.n==1, 1, 0),
+    MuerteDuranteTramitacion=if_else(Fallecimiento.durante.tramitación==1, 1, 0),
     MuerteDuranteTramitacionMomento=case_when(
         MuerteDuranteTramitacion == 0 ~ "No",
         FechaFallecimiento <= FechaCGyE ~ "1Previo a Comisión",
