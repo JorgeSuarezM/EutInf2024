@@ -1,110 +1,119 @@
 #4.2. ASPECTOS CLÍNICOS Y DE ACTUACIÓN DEL PERSONAL SANITARIO
 ## 4.2.1 Prestaciones por modalidad y año 2021-24
-# Cargar el archivo y modificar el delimitador
-df <- read.csv2("Modalidad.csv", stringsAsFactors = FALSE)
 
-# Leer estructura
-head(df)
-str(df)
+# Prestaciones por modalidad de inicio y comunidad autónoma
+tab4_2_1_wide <- df %>%
+  mutate(
+    fecha_prestacion = trimws(as.character(fecha_prestacion)),
+    modalidad_prestacion = trimws(as.character(modalidad_prestacion)),
+    ccaa = trimws(as.character(ccaa)),
+    modalidad_prestacion = ifelse(is.na(modalidad_prestacion) | modalidad_prestacion == "", "No consta", modalidad_prestacion),
+    ccaa = ifelse(is.na(ccaa) | ccaa == "" | ccaa == "PERDIDOS", "No consta", ccaa)
+  ) %>%
+  filter(!is.na(fecha_prestacion) & fecha_prestacion != "") %>%
+  group_by(ccaa, modalidad_prestacion) %>%
+  summarise(n = n(), .groups = "drop") %>%
+  tidyr::pivot_wider(names_from = modalidad_prestacion, values_from = n, values_fill = 0)
 
-# Transformar formato largo
-df_largo <- df %>%
-  pivot_longer(
-    cols = -Modalidad,
-    names_to = "CCAA",
-    values_to = "Numero"
-  )
-# Comprobar
-head(df_largo)
-nrow(df_largo)
+# Calcular columna Total solo sobre las columnas de modalidades
+modalidades_cols <- setdiff(names(tab4_2_1_wide), "ccaa")
+tab4_2_1_wide <- tab4_2_1_wide %>%
+  mutate(Total = rowSums(across(all_of(modalidades_cols))))
 
-# Reformatear para poner las CCAA como filas y los modalidad como columnas quitando los vacíos
-df_reformateado <- df_largo %>%
-  filter(Modalidad != "" & !is.na(Modalidad)) %>%  # quita valores vacíos o NA
-  pivot_wider(
-    names_from = Modalidad,
-    values_from = Numero
-  )
-# Guardar el archivo transformado
-library(readr)
-write_csv(df_reformateado, "Modalidad_por_CCAA.csv")
+# Calcular fila total nacional correctamente
+nacional <- tab4_2_1_wide %>%
+  summarise(across(all_of(modalidades_cols), sum, na.rm = TRUE)) %>%
+  mutate(ccaa = "Total") %>%
+  mutate(Total = rowSums(across(all_of(modalidades_cols)))) %>%
+  select(ccaa, all_of(modalidades_cols), Total)
 
-# Tabla
-tabla4_2_1 <- df_reformateado %>%
+# Unir tabla principal con fila total y mostrar
+final_tab4_2_1_wide <- bind_rows(tab4_2_1_wide, nacional) %>%
   gt() %>%
   tab_header(
-    title = "Prestaciones por modalidad",
-    subtitle = "Por comunidad autónoma"
+    title = "Prestaciones por modalidad de prestacion y comunidad autónoma",
+    subtitle = "Número de prestaciones realizadas"
   ) %>%
   cols_label(
-    CCAA = "Comunidad Autónoma",
-    `Administración directa por el equipo sanitario ` = "Administración directa",
-    `Autoadministración sin distinción por vía de administración` = "Autoadministración sin distinción",
-    `Autoadministración por vía oral` = "Autoadministración vía oral",
-    `Autoadministración por vía intravenosa` = "Autoadministración vía intravenosa",
+    ccaa = "Comunidad Autónoma",
+    Total = "Total"
+    # Puedes personalizar los nombres de las modalidades aquí si lo deseas
+  ) %>%
+  tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_body(columns = Total)
+  ) %>%
+  tab_style(
+    style = list(
+      cell_fill(color = "#E8F4FD"),
+      cell_text(weight = "bold")
+    ),
+    locations = cells_body(
+      rows = ccaa == "Total"
+    )
   ) %>%
   tab_source_note(
-    source_note = "Fuente: Datos oficiales sobre prestaciones de PAM."
+    source_note = "Fuente: Elaboración propia sobre prestaciones de PAM."
   )
 
-# Guardar tabla como archivo HTML
-gtsave(tabla4_2_1, "tablas/tabla4_2_1.html")
-
+gtsave(final_tab4_2_1_wide, "tablas/tab4_2_1.html")
 
 ## 4.2.2 Lugar de realización de la prestación por comunidad autónoma
+tab4_2_2 <- df %>%
+  mutate(
+    fecha_prestacion = trimws(as.character(fecha_prestacion)),
+    lugar_prestacion = trimws(as.character(lugar_prestacion)),
+    ccaa = trimws(as.character(ccaa)),
+    lugar_prestacion = ifelse(is.na(lugar_prestacion) | lugar_prestacion == "", "No consta", lugar_prestacion),
+    ccaa = ifelse(is.na(ccaa) | ccaa == "" | ccaa == "PERDIDOS", "No consta", ccaa)
+  ) %>%
+  filter(!is.na(fecha_prestacion) & fecha_prestacion != "") %>%
+  group_by(ccaa, lugar_prestacion) %>%
+  summarise(n = n(), .groups = "drop") %>%
+  tidyr::pivot_wider(names_from = lugar_prestacion, values_from = n, values_fill = 0)
 
-# Cargar el archivo y modificar el delimitador
-df <- read.csv2("Lugar_prestacion.csv", stringsAsFactors = FALSE)
+# Calcular columna Total solo sobre las columnas de modalidades
+lugares_cols <- setdiff(names(tab4_2_2), "ccaa")
+tab4_2_2 <- tab4_2_2 %>%
+  mutate(Total = rowSums(across(all_of(lugares_cols))))
 
-# Leer estructura
-head(df)
-str(df)
+# Calcular fila total nacional correctamente
+nacional <- tab4_2_2 %>%
+  summarise(across(all_of(lugares_cols), sum, na.rm = TRUE)) %>%
+  mutate(ccaa = "Total") %>%
+  mutate(Total = rowSums(across(all_of(lugares_cols)))) %>%
+  select(ccaa, all_of(lugares_cols), Total)
 
-# Cambiamos el nombre de la primera columna
-names(df)[1] <- "Lugar"
-
-# Transformar formato largo
-df_largo <- df %>%
-  pivot_longer(
-    cols = -Lugar,
-    names_to = "CCAA",
-    values_to = "Numero"
-  )
-# Comprobar
-head(df_largo)
-nrow(df_largo)
-
-# 5. Reformatear para poner las CCAA como filas y los lugares como columnas
-df_reformateado <- df_largo %>%
-  pivot_wider(
-    names_from = Lugar,
-    values_from = Numero
-  )
-
-# Guardar el archivo transformado
-library(readr)
-write_csv(df_reformateado, "Lugar_prestacion_por_CCAA.csv")
-
-# Tabla
-tabla4_2_2 <- df_reformateado %>%
+# Unir tabla principal con fila total y mostrar
+final_tab4_2_2 <- bind_rows(tab4_2_2, nacional) %>%
   gt() %>%
   tab_header(
-    title = "Lugar de realización de la prestación",
-    subtitle = "Por comunidad autónoma"
+    title = "Prestaciones por lugar de prestacion y comunidad autónoma",
+    subtitle = "Número de prestaciones realizadas"
   ) %>%
   cols_label(
-    CCAA = "Comunidad Autónoma",
-    `Nº de prestaciones de ayuda para morir realizadas en el hospital` = "Hospital",
-    `Nº de prestaciones de ayuda para morir realizadas en centros no hospitalarios` = "Centros no hospitalarios",
-    `Nº de prestaciones de ayuda para morir realizadas en el domicilio del paciente` = "Domicilio particular",
-    `Nº de prestaciones de ayuda para morir realizadas en instituciones sociosanitarias` = "Centro sociosanitario"
+    ccaa = "Comunidad Autónoma",
+    Total = "Total"
+    # Puedes personalizar los nombres de las modalidades aquí si lo deseas
+  ) %>%
+  tab_style(
+    style = cell_text(weight = "bold"),
+    locations = cells_body(columns = Total)
+  ) %>%
+  tab_style(
+    style = list(
+      cell_fill(color = "#E8F4FD"),
+      cell_text(weight = "bold")
+    ),
+    locations = cells_body(
+      rows = ccaa == "Total"
+    )
   ) %>%
   tab_source_note(
-    source_note = "Fuente: Datos oficiales sobre prestaciones de PAM."
+    source_note = "Fuente: Elaboración propia sobre prestaciones de PAM."
   )
 
-# Guardar tabla como archivo HTML
-gtsave(tabla4_2_2, "tablas/tabla4_2_2.html")
+gtsave(final_tab4_2_2, "tablas/tab4_2_2.html")
 
 ## 4.2.3 Ámbito público o privado por comunidad autónoma
 
