@@ -44,5 +44,3 @@ mutate(reclamacion=if_else((reclamacion_cgye == 'Si' | resolucion_fav_cgye != ''
     ),
     revocacion=if_else(revocacion == 'Si', 1, 0)
 )
-
-xtabs(~reclamacion+ccaa, df)
