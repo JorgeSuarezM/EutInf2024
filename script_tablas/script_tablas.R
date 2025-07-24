@@ -119,8 +119,6 @@ t1 <- tab1 %>%
         )  %>%
         gt_theme_espn()
 gtsave(t1, "script_tablas/tablas_def/tabla_1.html")
-gtsave(t1, "script_tablas/tablas_def/tabla_1.png") #Para guardar en formato .png, aunque puede dar problemas si no se configura bien
-gtsave(t1, "script_tablas/tablas_def/tabla_1.docx")
 
 ### Tabla 2: Distribución por edad de solicitantes y beneficiarios
 
