@@ -28,7 +28,22 @@ df<-df %>%
 rename(informe_mr = informe_fav_mr,
     informe_mc = informe_fav_mc,
     informe_cgye = informe_fav_cgye,
-    fecha_fallecimiento = fecha_fallecimiento_tramitacion)
+    fecha_fallecimiento = fecha_fallecimiento_tramitacion) %>%
+    mutate(ccaa = if_else(ccaa == "Región de Murcia", "Murcia", ccaa),
+    tipo_procedimiento = case_when(
+        tipo_procedimiento %in% c("Primera soliciud", "Primera solicitud") ~ "Primera solicitud",
+        TRUE ~ as.character(tipo_procedimiento)
+    ),
+    edad=case_when(
+        edad == "1-Tramo de edad (<30)" ~ "<30",
+        edad == "2-Tramo de edad (30-39)" ~ "30-39",
+        edad == "3-Tramo de edad (40-49)" ~ "40-49",
+        edad == "4-Tramo de edad (50-59)" ~ "50-59",
+        edad == "5-Tramo de edad (60-69)" ~ "60-69",
+        edad == "6-Tramo de edad (70-79)" ~ "70-79",
+        edad == "7-Tramo de edad (>80)" ~ ">80",
+        TRUE ~ as.character(edad)
+    ))
 
 # Crear variables de denegación y muerte durante la tramitación
 df<-df %>%
@@ -44,3 +59,18 @@ mutate(reclamacion=if_else((reclamacion_cgye == 'Si' | resolucion_fav_cgye != ''
     ),
     revocacion=if_else(revocacion == 'Si', 1, 0)
 )
+
+# Crear variable para saber la resolución de cada solicitud
+df<-df %>%
+    mutate(resultado=case_when(
+        !is.na(fecha_prestacion) ~ "Prestación",
+        fallecimiento_tramitacion == 1 ~ "Fallecimiento durante tramitación",
+        denegado == 1 ~ "Denegado",
+        revocacion == 1 ~ "Revocado",
+        TRUE ~ "Sin datos"
+    ))
+
+noData<-df %>%
+    filter(resultado == "Sin datos")
+write.csv(noData, "noData.csv")
+
