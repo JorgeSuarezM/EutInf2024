@@ -20,15 +20,42 @@ fecha_informe_mr = as.Date(fecha_informe_mr, format="%d/%m/%Y"),
 fecha_fallecimiento_tramitacion = as.Date(fecha_fallecimiento_tramitacion, format="%d/%m/%Y"),
 fecha_aplazamiento = as.Date(fecha_aplazamiento, format="%d/%m/%Y"),
 fecha_primera_solicitud = as.Date(fecha_primera_solicitud, format="%d/%m/%Y"),
-fecha_segunda_solicitud = as.Date(fecha_segunda_solicitud, format="%d/%m/%Y"))
+fecha_segunda_solicitud = as.Date(fecha_segunda_solicitud, format="%d/%m/%Y"),
+fecha_reclamacion_cgye = as.Date(fecha_reclamacion_cgye, format="%d/%m/%Y"),
+fecha_resolucion_cgye = as.Date(fecha_resolucion_cgye, format="%d/%m/%Y"))
 
 # Renombrar columnas para facilitar el uso
 # (!) Comentar con ## las líneas siguientes para evitar conflictos con las tablas ya hechas
-df<-df %>%
-rename(informe_mr = informe_fav_mr,
+df <- df %>%
+  rename(
+    informe_mr = informe_fav_mr,
     informe_mc = informe_fav_mc,
     informe_cgye = informe_fav_cgye,
-    fecha_fallecimiento = fecha_fallecimiento_tramitacion)
+    fecha_fallecimiento = fecha_fallecimiento_tramitacion
+  ) %>%
+  mutate(
+    ccaa = ifelse(ccaa == "Región de Murcia", "Murcia", ccaa),
+    especialidad_mr = ifelse(
+      trimws(tolower(especialidad_mr)) %in% c("cuidados paliativos", "ciudado paliativos", "ciudados paliativos"),
+      "Cuidados Paliativos",
+      especialidad_mr
+    ),
+  tipo_procedimiento = case_when(
+    tipo_procedimiento %in% c("Primera soliciud", "Primera solicitud") ~ "Primera solicitud",
+  TRUE ~ as.character(tipo_procedimiento)
+),
+
+    edad = case_when(
+    edad == "1-Tramo de edad (<30)" ~ "<30",
+    edad == "2-Tramo de edad (30-39)" ~ "30-39",
+    edad == "3-Tramo de edad (40-49)" ~ "40-49",
+    edad == "4-Tramo de edad (50-59)" ~ "50-59",
+    edad == "5-Tramo de edad (60-69)" ~ "60-69",
+    edad == "6-Tramo de edad (70-79)" ~ "70-79",
+    edad == "7-Tramo de edad (> 80)" ~ ">80",
+    TRUE ~ as.character(edad)
+  )
+)
 
 # Crear variables de denegación y muerte durante la tramitación
 df<-df %>%
@@ -43,4 +70,6 @@ mutate(reclamacion=if_else((reclamacion_cgye == 'Si' | resolucion_fav_cgye != ''
         fecha_fallecimiento <= fecha_informe_mr ~ "3Previo a Informe Médico Responsable"
     ),
     revocacion=if_else(revocacion == 'Si', 1, 0)
-)
+    )
+
+
