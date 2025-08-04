@@ -44,7 +44,6 @@ df <- df %>%
     tipo_procedimiento %in% c("Primera soliciud", "Primera solicitud") ~ "Primera solicitud",
   TRUE ~ as.character(tipo_procedimiento)
 ),
-
     edad = case_when(
     edad == "1-Tramo de edad (<30)" ~ "<30",
     edad == "2-Tramo de edad (30-39)" ~ "30-39",
@@ -64,12 +63,13 @@ mutate(reclamacion=if_else((reclamacion_cgye == 'Si' | resolucion_fav_cgye != ''
     is.na(fecha_prestacion) & (informe_mr == 'No' | informe_mc == 'No' | informe_cgye == 'No') & resolucion_fav_cgye != 'Si', 1, 0),
     fallecimiento_tramitacion=if_else(fallecimiento_tramitacion == 'Si', 1, 0),
     fallecimiento_tramitacion_momento=case_when(
-        fallecimiento_tramitacion != 1 ~ "No",
-        fecha_fallecimiento <= fecha_informe_cgye ~ "1Previo a Comisión",
-        fecha_fallecimiento <= fecha_informe_mc ~ "2Previo a Informe Médico Consultor",
-        fecha_fallecimiento <= fecha_informe_mr ~ "3Previo a Informe Médico Responsable"
-    ),
-    revocacion=if_else(revocacion == 'Si', 1, 0)
+      fallecimiento_tramitacion !=1 ~ "No",
+      fecha_fallecimiento <= fecha_informe_mr ~ "Antes del informe MR",
+      fecha_fallecimiento <= fecha_informe_mc ~ "Antes del informe MC",
+      fecha_fallecimiento <= fecha_informe_cgye ~ "Antes del informe CGYE",
+      fecha_fallecimiento > fecha_informe_cgye ~ "Después del informe CGYE",
+      TRUE ~ "No consta"
+    )
 )
 
 # Crear variable para saber la resolución de cada solicitud
