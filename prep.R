@@ -33,18 +33,7 @@ df <- df %>%
     informe_cgye = informe_fav_cgye,
     fecha_fallecimiento = fecha_fallecimiento_tramitacion
   ) %>%
-  mutate(
-    ccaa = ifelse(ccaa == "Región de Murcia", "Murcia", ccaa),
-    especialidad_mr = ifelse(
-      trimws(tolower(especialidad_mr)) %in% c("cuidados paliativos", "ciudado paliativos", "ciudados paliativos"),
-      "Cuidados Paliativos",
-      especialidad_mr
-    ),
-  tipo_procedimiento = case_when(
-    tipo_procedimiento %in% c("Primera soliciud", "Primera solicitud") ~ "Primera solicitud",
-  TRUE ~ as.character(tipo_procedimiento)
-),
-
+mutate(
     edad = case_when(
     edad == "1-Tramo de edad (<30)" ~ "<30",
     edad == "2-Tramo de edad (30-39)" ~ "30-39",
