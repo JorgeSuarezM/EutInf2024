@@ -3089,37 +3089,3 @@ t36 <- df_donantes_organos_año_t %>%
 
 gtsave(t36, "script_tablas/tablas_def/tabla_36.html")
 
-# (AP. 5.3.) Figura 10: Prestaciones por ámbito de prestación público-privado y CC. AA. 2024 (barras apiladas por CC. AA.)
-ambito<-c("Público", "Privado")
-porc<-c("96.68", "3.32")
-fig10 <- data.frame(ambito, porc)
-
-ggplot(fig10, aes(x = "", y = as.numeric(porc), fill = ambito)) +
-    geom_bar(stat = "identity", width = 1, color = "white") +
-    coord_polar("y", start = 0) +
-    scale_fill_manual(values = c("Público" = "#fdbb63", "Privado" = "#6b174a")) +
-    theme_void() +
-    labs(title = "Prestaciones por ámbito de prestación público-privado 2024", fill = "Ámbito") +
-    geom_text(aes(label = paste0(porc, "%")), 
-              position = position_stack(vjust = 0.5), 
-              color = "black", size = 7) +
-    theme(
-        plot.title = element_text(size = 20, margin = margin(l = -10), hjust = 0.5),
-        legend.position = "bottom",
-        legend.text = element_text(size = 16),
-        legend.title = element_text(size = 18),
-        plot.background = element_rect(fill = "transparent", color = NA),
-        panel.background = element_rect(fill = "transparent", color = NA),
-        plot.margin = margin(t=20, b = 20),
-    ) +
-    geom_label(
-        aes(label = paste0(porc, "%"), y = as.numeric(porc), fill = ambito),
-        color = "black",
-        fill = "white",
-        label.size = 0.7,
-        size = 7,
-        show.legend = FALSE,
-        position = position_stack(vjust = 0.5)
-    )
-
-ggsave("script_figuras/figuras_def/fig10.png", width = 8, height = 8, dpi = 300, bg = "transparent")
