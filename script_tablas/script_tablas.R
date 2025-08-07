@@ -1,42 +1,54 @@
-### Tabla 1: Distribución por sexo de solicitantes y beneficiarios
-t<-df %>%
-mutate(
-  Solicitante = 1,
-  Beneficiario = if_else(!is.na(fecha_prestacion), 1, 0),
-  fallecimiento_tramitacion = as.numeric(fallecimiento_tramitacion),
-  denegado = as.numeric(denegado),
-  revocacion = as.numeric(revocacion)
-)
-table(df$Denegado)
 
-tab1<-t %>%
-group_by(ccaa) %>%
-summarise(
-  TotalSolicitantesN = sum(Solicitante),
-  TotalSolicitantesP = round((sum(Solicitante) / nrow(t) * 100), digits=2),
-  TotalPrestacionesN = sum(Beneficiario),
-  TotalPrestacionesP = round((sum(Beneficiario) / nrow(t) * 100), digits=2),
-  TotalMuerteDuranteTramitacionN = sum(fallecimiento_tramitacion, na.rm=T),
-  TotalMuerteDuranteTramitacionP = round((sum(fallecimiento_tramitacion, na.rm=T) / nrow(t) * 100), digits=2),
-  TotalDenegadosN = sum(denegado, na.rm = TRUE),
-  TotalDenegadosP = round((sum(denegado, na.rm = TRUE) / nrow(t) * 100), digits=2),
-  TotalRevocadosN = sum(revocacion, na.rm = TRUE),
-  TotalRevocadosP = round((sum(revocacion, na.rm = TRUE) / nrow(t) * 100), digits=2)
-)
-tab1b<-t %>%
-summarise(
+## Tabla 1: Distribución por sexo de solicitantes y beneficiarios
+t <- df %>%
+  mutate(
+    Solicitante = 1,
+    Beneficiario = if_else(!is.na(fecha_prestacion), 1, 0),
+    fallecimiento_tramitacion = as.numeric(fallecimiento_tramitacion),
+    denegado = as.numeric(denegado),
+    revocacion = as.numeric(revocacion)
+  )
+table(df$denegado)
+
+
+# tab1: por ccaa (porcentajes por fila)
+tab1 <- t %>%
+  group_by(ccaa) %>%
+  summarise(
+    TotalSolicitantesN = sum(Solicitante),
+    TotalPrestacionesN = sum(Beneficiario),
+    TotalMuerteDuranteTramitacionN = sum(fallecimiento_tramitacion, na.rm=TRUE),
+    TotalDenegadosN = sum(denegado, na.rm=TRUE),
+    TotalRevocadosN = sum(revocacion, na.rm=TRUE)
+  ) %>%
+  filter(!is.na(ccaa) & ccaa != "") %>%
+  mutate(
+    TotalSolicitantesP = 100,
+    TotalPrestacionesP = round((TotalPrestacionesN / TotalSolicitantesN) * 100, 2),
+    TotalMuerteDuranteTramitacionP = round((TotalMuerteDuranteTramitacionN / TotalSolicitantesN) * 100, 2),
+    TotalDenegadosP = round((TotalDenegadosN / TotalSolicitantesN) * 100, 2),
+    TotalRevocadosP = round((TotalRevocadosN / TotalSolicitantesN) * 100, 2)
+  )
+
+# tab1b: total (igual que tab1, porcentajes por fila)
+tab1b <- t %>%
+  summarise(
     ccaa = "Total",
     TotalSolicitantesN = sum(Solicitante),
-    TotalSolicitantesP = round((sum(Solicitante) / nrow(t) * 100), digits=2),
     TotalPrestacionesN = sum(Beneficiario),
-    TotalPrestacionesP = round((sum(Beneficiario) / nrow(t) * 100), digits=2),
-    TotalMuerteDuranteTramitacionN = sum(fallecimiento_tramitacion, na.rm=T),
-    TotalMuerteDuranteTramitacionP = round((sum(fallecimiento_tramitacion, na.rm=T) / nrow(t) * 100), digits=2),
-    TotalDenegadosN = sum(denegado, na.rm = TRUE),
-    TotalDenegadosP = round((sum(denegado, na.rm = TRUE) / nrow(t) * 100), digits=2),
-    TotalRevocadosN = sum(revocacion, na.rm = TRUE),
-    TotalRevocadosP = round((sum(revocacion, na.rm = TRUE) / nrow(t) * 100), digits=2)
-)
+    TotalMuerteDuranteTramitacionN = sum(fallecimiento_tramitacion, na.rm=TRUE),
+    TotalDenegadosN = sum(denegado, na.rm=TRUE),
+    TotalRevocadosN = sum(revocacion, na.rm=TRUE)
+  ) %>%
+  mutate(
+    TotalSolicitantesP = 100,
+    TotalPrestacionesP = round((TotalPrestacionesN / TotalSolicitantesN) * 100, 2),
+    TotalMuerteDuranteTramitacionP = round((TotalMuerteDuranteTramitacionN / TotalSolicitantesN) * 100, 2),
+    TotalDenegadosP = round((TotalDenegadosN / TotalSolicitantesN) * 100, 2),
+    TotalRevocadosP = round((TotalRevocadosN / TotalSolicitantesN) * 100, 2)
+  )
+
+# unir
 tab1 <- bind_rows(tab1, tab1b)
 
 tab1 <- tab1 %>%
@@ -92,28 +104,9 @@ t1 <- tab1 %>%
             align = "center",
             columns = -ccaa
         ) %>%
-        tab_style(
-            style = cell_borders(
-            sides = "bottom",
-            color = "black",
-            weight = px(2)
-            ),
-            locations = cells_body(
-            rows = 19
-            )
-        ) %>%
         tab_source_note( # Añadir nota de la fuente
             source_note = "Nota: Todos los porcentajes se dan con respecto del total de solicitudes."
             ) %>%
-        tab_style(
-            style = list(
-            cell_fill(color = "gray40"),
-            cell_text(color = "white")
-            ),
-            locations = cells_body(
-            rows = 19
-            )
-        )  %>%
         gt_theme_espn()
 gtsave(t1, "script_tablas/tablas_def/tabla_1.html")
 
@@ -205,7 +198,117 @@ final_t2 <- bind_rows(t2, total_nacional) %>%
 
 gtsave(final_t2, "script_tablas/tablas_def/tabla_2.html")
 
-### Tabla 3: Número de solicitudes por ccaa (n y %), histórico 2021-2024
+
+### Tabla 3: Distribución por sexo de solicitantes y beneficiarios (porcentajes por fila)
+t_b <- df %>%
+  mutate(
+    Solicitante = 1,
+    Beneficiario = if_else(!is.na(fecha_prestacion), 1, 0),
+    fallecimiento_tramitacion = as.numeric(fallecimiento_tramitacion),
+    denegado = as.numeric(denegado),
+    revocacion = as.numeric(revocacion)
+  )
+
+# tab3: por ccaa (porcentajes por fila)
+tab3 <- t_b %>%
+  group_by(ccaa) %>%
+  summarise(
+    TotalSolicitantesN = sum(Solicitante),
+    TotalPrestacionesN = sum(Beneficiario),
+    TotalMuerteDuranteTramitacionN = sum(fallecimiento_tramitacion, na.rm=TRUE),
+    TotalDenegadosN = sum(denegado, na.rm=TRUE),
+    TotalRevocadosN = sum(revocacion, na.rm=TRUE)
+  ) %>%
+  filter(!is.na(ccaa) & ccaa != "") %>%
+  mutate(
+    TotalSolicitantesP = 100,
+    TotalPrestacionesP = round((TotalPrestacionesN / TotalSolicitantesN) * 100, 2),
+    TotalMuerteDuranteTramitacionP = round((TotalMuerteDuranteTramitacionN / TotalSolicitantesN) * 100, 2),
+    TotalDenegadosP = round((TotalDenegadosN / TotalSolicitantesN) * 100, 2),
+    TotalRevocadosP = round((TotalRevocadosN / TotalSolicitantesN) * 100, 2)
+  )
+
+# tab3_total: total (igual que tab3, porcentajes por fila)
+tab3_total <- t_b %>%
+  summarise(
+    ccaa = "Total",
+    TotalSolicitantesN = sum(Solicitante),
+    TotalPrestacionesN = sum(Beneficiario),
+    TotalMuerteDuranteTramitacionN = sum(fallecimiento_tramitacion, na.rm=TRUE),
+    TotalDenegadosN = sum(denegado, na.rm=TRUE),
+    TotalRevocadosN = sum(revocacion, na.rm=TRUE)
+  ) %>%
+  mutate(
+    TotalSolicitantesP = 100,
+    TotalPrestacionesP = round((TotalPrestacionesN / TotalSolicitantesN) * 100, 2),
+    TotalMuerteDuranteTramitacionP = round((TotalMuerteDuranteTramitacionN / TotalSolicitantesN) * 100, 2),
+    TotalDenegadosP = round((TotalDenegadosN / TotalSolicitantesN) * 100, 2),
+    TotalRevocadosP = round((TotalRevocadosN / TotalSolicitantesN) * 100, 2)
+  )
+
+# unir
+tab3_final <- bind_rows(tab3, tab3_total) %>%
+  mutate(
+    order = case_when(
+      ccaa == "Total" ~ 2,
+      ccaa == "No consta" ~ 1,
+      TRUE ~ 0
+    )
+  ) %>%
+  arrange(order, ccaa) %>%
+  select(-order)
+
+# Crear tabla gt y guardar como tabla_3.html
+t3 <- tab3_final %>%
+  gt() %>%
+    tab_header(
+      title = "Distribución general por Comunidad Autónoma (por fila)"
+    ) %>%
+    cols_label(
+      ccaa = "Comunidad Autónoma",
+      TotalSolicitantesN = "Núm.",
+      TotalSolicitantesP = "%",
+      TotalPrestacionesN = "Núm.",
+      TotalPrestacionesP = "%",
+      TotalMuerteDuranteTramitacionN = "Núm.",
+      TotalMuerteDuranteTramitacionP = "%",
+      TotalDenegadosN = "Núm.",
+      TotalDenegadosP = "%",
+      TotalRevocadosN = "Núm.",
+      TotalRevocadosP = "%"
+    ) %>%
+    tab_spanner(
+      label = "Solicitudes",
+      columns = c(TotalSolicitantesN, TotalSolicitantesP)
+    ) %>%
+    tab_spanner(
+      label = "Prestaciones",
+      columns = c(TotalPrestacionesN, TotalPrestacionesP)
+    ) %>%
+    tab_spanner(
+      label = "Muertes durante tramitación",
+      columns = c(TotalMuerteDuranteTramitacionN, TotalMuerteDuranteTramitacionP)
+    ) %>%
+    tab_spanner(
+      label = "Denegaciones",
+      columns = c(TotalDenegadosN, TotalDenegadosP)
+    ) %>%
+    tab_spanner(
+      label = "Revocaciones",
+      columns = c(TotalRevocadosN, TotalRevocadosP)
+    ) %>%
+    cols_align(
+      align = "center",
+      columns = -ccaa
+    ) %>%
+    tab_source_note(
+      source_note = "Nota: Todos los porcentajes se calculan respecto al total de solicitantes de cada fila."
+    ) %>%
+    gt_theme_espn()
+
+gtsave(t3, "script_tablas/tablas_def/tabla_3.html")
+
+### Tabla 4: Número de solicitudes por ccaa (n y %), histórico 2021-2024
 # Datos de solicitudes y población
 solicitudes_historico <- data.frame(
   Comunidad = c("Andalucía", "Aragón", "Asturias", "Canarias", "Cantabria",
@@ -296,7 +399,7 @@ solicitudes_tabla <- solicitudes_tabla %>%
   select(-order)
 
 # Crear tabla gt
-t3 <- solicitudes_tabla %>%
+t4 <- solicitudes_tabla %>%
   gt() %>%
   tab_header(
     title = "Número de solicitudes por CC. AA y tasas por 100.000 habitantes (histórico 2021-2024)"
@@ -341,10 +444,10 @@ t3 <- solicitudes_tabla %>%
     source_note = "Nota: Elaboración propia a partir de datos de población y solicitudes."
   )
 
-gtsave(t3, "script_tablas/tablas_def/tabla_3.html")
+gtsave(t4, "script_tablas/tablas_def/tabla_4.html")
 
 
-### Tabla 4: Solicitudes por sexo y edad (n) 2024
+### Tabla 5: Solicitudes por sexo y edad (n) 2024
 solicitudes_edad_sexo <- df %>%
   mutate(
     sexo = ifelse(is.na(sexo) | sexo == "", "No consta", sexo)
@@ -404,7 +507,7 @@ fila_total$pct_Total <- 100
 solicitudes_edad_sexo <- bind_rows(solicitudes_edad_sexo, fila_total)
 
 # Tabla gt
-t4 <- solicitudes_edad_sexo %>%
+t5 <- solicitudes_edad_sexo %>%
   gt() %>%
   tab_header(
     title = "Solicitudes por sexo y edad",
@@ -470,9 +573,9 @@ t4 <- solicitudes_edad_sexo %>%
     source_note = "Nota: Elaboración propia."
   )
 
-gtsave(t4, "script_tablas/tablas_def/tabla_4.html")
+gtsave(t5, "script_tablas/tablas_def/tabla_5.html")
 
-###Tabla 5: Solicitudes de PAM por enfermedad de base (n y % respecto al total del año), histórico 2021-2024.
+### Tabla 6: Solicitudes de PAM por enfermedad de base (n y % respecto al total del año), histórico 2021-2024.
 solicitudes_pato_historico <- data.frame(
   patologia = c("Neurología", "Oncología", "Pluripatología", "Reumatología y patología osteomuscular",
                 "Cardiovascular", "Respiratoria", "Otra", "No consta"),
@@ -519,7 +622,7 @@ solicitudes_pato_tabla <- solicitudes_pato_tabla %>%
   arrange(order) %>%
   select(-order)
 # Crear tabla
-t5 <- solicitudes_pato_tabla %>%
+t6 <- solicitudes_pato_tabla %>%
   gt() %>%
   tab_header(
     title = "Solicitudes de PAM por enfermedad de base y año",
@@ -564,10 +667,10 @@ t5 <- solicitudes_pato_tabla %>%
   tab_source_note(
     source_note = "Nota: Elaboración propia.")
 
-gtsave(t5, "script_tablas/tablas_def/tabla_5.html")
+gtsave(t6, "script_tablas/tablas_def/tabla_6.html")
 
-### Tabla 6: Solicitudes por país de nacimiento (n y %), 2024
-tabla6 <- df %>%
+### Tabla 7: Solicitudes por país de nacimiento (n y %), 2024
+tabla7 <- df %>%
   mutate(pais_nacimiento = ifelse(is.na(pais_nacimiento) | pais_nacimiento == "", "No consta", pais_nacimiento)) %>%
   group_by(pais_nacimiento) %>%
   summarise(n = n(), .groups = 'drop') %>%
@@ -578,10 +681,10 @@ tabla6 <- df %>%
 fila_total <- data.frame(pais_nacimiento = "Total",
                         n = sum(tabla6$n),
                         pct = 100)
-tabla6 <- bind_rows(tabla6, fila_total)
+tabla7 <- bind_rows(tabla7, fila_total)
 
 # Tabla gt
-t6 <- tabla6 %>%
+t7 <- tabla7 %>%
   gt() %>%
   tab_header(
     title = "Solicitudes por país de nacimiento, 2024"
@@ -612,9 +715,9 @@ t6 <- tabla6 %>%
     source_note = "Nota: Elaboración propia."
   )
 
-gtsave(t6, "script_tablas/tablas_def/tabla_6.html")
+gtsave(t7, "script_tablas/tablas_def/tabla_7.html")
 
-###Tabla 7: Tasa de prestaciones respecto a solicitudes totales y mortalidad total por CCAA 2024
+### Tabla 8: Tasa de prestaciones respecto a solicitudes totales y mortalidad total por CCAA 2024
 defunciones_ccaa <- tribble(
   ~ccaa, ~defunciones,
   "Andalucía", 73036,
@@ -652,7 +755,7 @@ prestaciones_ccaa <- df %>%
   summarise(prestaciones = n(), .groups = "drop")
 
 # Unir todo
-tabla7_raw <- defunciones_ccaa %>%
+tabla8_raw <- defunciones_ccaa %>%
   left_join(solicitudes_ccaa, by = "ccaa") %>%
   left_join(prestaciones_ccaa, by = "ccaa") %>%
   mutate(
@@ -662,7 +765,7 @@ tabla7_raw <- defunciones_ccaa %>%
     tasa_mortalidad_pam = round((prestaciones / defunciones) * 100, 2)
   )
 
-tabla7 <- tabla7_raw %>%
+tabla8 <- tabla8_raw %>%
   mutate(
     solicitudes = ifelse(ccaa == "Ceuta" & is.na(solicitudes), 0, solicitudes),
     prestaciones = ifelse(ccaa == "Ceuta" & is.na(prestaciones), 0, prestaciones),
@@ -672,19 +775,19 @@ tabla7 <- tabla7_raw %>%
   select(ccaa, solicitudes, prestaciones, tasa_prestacion, tasa_mortalidad_pam)
 
 # Añadir fila total nacional
-total_defunciones <- sum(tabla7_raw$defunciones, na.rm = TRUE)
+total_defunciones <- sum(tabla8_raw$defunciones, na.rm = TRUE)
 fila_total <- tibble(
   ccaa = "Total",
-  solicitudes = sum(tabla7$solicitudes, na.rm = TRUE),
-  prestaciones = sum(tabla7$prestaciones, na.rm = TRUE),
-  tasa_prestacion = round((sum(tabla7$prestaciones, na.rm = TRUE) / sum(tabla7$solicitudes, na.rm = TRUE)) * 100, 2),
-  tasa_mortalidad_pam = round((sum(tabla7$prestaciones, na.rm = TRUE) / total_defunciones) * 100, 2)
+  solicitudes = sum(tabla8$solicitudes, na.rm = TRUE),
+  prestaciones = sum(tabla8$prestaciones, na.rm = TRUE),
+  tasa_prestacion = round((sum(tabla8$prestaciones, na.rm = TRUE) / sum(tabla8$solicitudes, na.rm = TRUE)) * 100, 2),
+  tasa_mortalidad_pam = round((sum(tabla8$prestaciones, na.rm = TRUE) / total_defunciones) * 100, 2)
 )
 
-tabla7 <- bind_rows(tabla7, fila_total)
+tabla8 <- bind_rows(tabla8, fila_total)
 
 # Formatear y guardar tabla con gt
-t7 <- tabla7 %>%
+t8 <- tabla8 %>%
   gt() %>%
   tab_header(
     title = "Tasa de prestaciones respecto a solicitudes totales y mortalidad total por Comunidad Autónoma, 2024"
@@ -713,10 +816,10 @@ t7 <- tabla7 %>%
     source_note = "Fuente: INE 2024 y elaboración propia"
   )
 
-gtsave(t7, "script_tablas/tablas_def/tabla_7.html")
+gtsave(t8, "script_tablas/tablas_def/tabla_8.html")
 
-#### Tabla 8: Tasa de autorización de la CGyE por CCAA 2024
-tabla8 <- df %>%
+#### Tabla 9: Tasa de autorización de la CGyE por CCAA 2024
+tabla9 <- df %>%
   mutate(
     ccaa = ifelse(is.na(ccaa) | ccaa == "" | ccaa == "PERDIDOS", "No consta", ccaa)
   ) %>%
@@ -735,16 +838,16 @@ tabla8 <- df %>%
 # Añadir fila total nacional
 fila_total <- tibble(
   ccaa = "Total",
-  solicitudes_evaluadas = sum(tabla8$solicitudes_evaluadas, na.rm = TRUE),
-  inf_favorables = sum(tabla8$inf_favorables, na.rm = TRUE),
-  tasa_inf_favorables = round((sum(tabla8$inf_favorables, na.rm = TRUE) / sum(tabla8$solicitudes_evaluadas, na.rm = TRUE)) * 100, 2),
-  tasa_prestaciones_sobre_favorables = round((sum(df$informe_cgye == "Si" & !is.na(df$fecha_prestacion), na.rm = TRUE) / sum(tabla8$inf_favorables, na.rm = TRUE)) * 100, 2)
+  solicitudes_evaluadas = sum(tabla9$solicitudes_evaluadas, na.rm = TRUE),
+  inf_favorables = sum(tabla9$inf_favorables, na.rm = TRUE),
+  tasa_inf_favorables = round((sum(tabla9$inf_favorables, na.rm = TRUE) / sum(tabla9$solicitudes_evaluadas, na.rm = TRUE)) * 100, 2),
+  tasa_prestaciones_sobre_favorables = round((sum(df$informe_cgye == "Si" & !is.na(df$fecha_prestacion), na.rm = TRUE) / sum(tabla9$inf_favorables, na.rm = TRUE)) * 100, 2)
 )
 
-tabla8 <- bind_rows(tabla8, fila_total)
+tabla9 <- bind_rows(tabla9, fila_total)
 #
 # Tabla gt
-t8 <- tabla8 %>%
+t9 <- tabla9 %>%
   gt() %>%
   tab_header(
     title = "Tasa de autorización de la CGyE por CCAA, 2024"
@@ -773,10 +876,10 @@ t8 <- tabla8 %>%
     source_note = "Nota: Elaboración propia."
   )
 
-gtsave(t8, "script_tablas/tablas_def/tabla_8.html")
+gtsave(t9, "script_tablas/tablas_def/tabla_9.html")
 
 
-###Tabla 9: Prestaciones por CCAA, histórico 2021-2024
+###Tabla 10: Prestaciones por CCAA, histórico 2021-2024
 prestaciones_historico <- data.frame(
   prestaciones_comu = c("Andalucía", "Aragón", "Asturias", "Canarias", "Cantabria",
                   "Castilla-La Mancha", "Castilla y León", "Cataluña", "Comunidad Valenciana",
@@ -843,7 +946,7 @@ prestaciones_tabla <- bind_rows(prestaciones_pct, fila_total) %>%
   select(-order)
 
 # Crear tabla gt
-t9 <- prestaciones_tabla %>%
+t10 <- prestaciones_tabla %>%
   gt() %>%
   tab_header(
     title = "Prestaciones por Comunidad Autónoma y año",
@@ -884,9 +987,9 @@ t9 <- prestaciones_tabla %>%
     source_note = "Nota: Elaboración propia."
   )
 
-gtsave(t9, "script_tablas/tablas_def/tabla_9.html")
+gtsave(t10, "script_tablas/tablas_def/tabla_10.html")
 
-### Tabla 10: Prestaciones por edad y sexo (n y %), 2024
+### Tabla 11: Prestaciones por edad y sexo (n y %), 2024
 prestaciones_edad_sexo <- df %>%
   filter(!is.na(fecha_prestacion)) %>%
   mutate(
@@ -945,7 +1048,7 @@ fila_total$pct_Total  <- sum(prestaciones_edad_sexo$pct_Total, na.rm = TRUE)
 prestaciones_edad_sexo <- bind_rows(prestaciones_edad_sexo, fila_total)
 
 ## Tabla gt
-tabla10 <- prestaciones_edad_sexo %>%
+tabla11 <- prestaciones_edad_sexo %>%
   gt() %>%
   tab_header(
     title = "Prestaciones por sexo y edad",
@@ -1011,9 +1114,9 @@ tabla10 <- prestaciones_edad_sexo %>%
     source_note = "Nota: Elaboración propia."
   )
 
-gtsave(tabla10, "script_tablas/tablas_def/tabla_10.html")
+gtsave(tabla11, "script_tablas/tablas_def/tabla_11.html")
 
-### Tabla 11: Prestaciones por enfermedad de base  (n y %), 2024
+### Tabla 12: Prestaciones por enfermedad de base  (n y %), 2024
 # Calcular tabla nacional de prestaciones por enfermedad de base (n y %)
 prestaciones_base_nacional <- df %>%
   filter(!is.na(fecha_prestacion)) %>%
@@ -1042,7 +1145,7 @@ fila_total <- tibble(
 prestaciones_base_nacional <- bind_rows(prestaciones_base_nacional, fila_total)
 
 # Tabla gt con estilos para la tabla nacional
-t11 <- prestaciones_base_nacional %>%
+t12 <- prestaciones_base_nacional %>%
   gt() %>%
   tab_header(
     title = "Prestaciones por enfermedad de base"
@@ -1079,11 +1182,11 @@ t11 <- prestaciones_base_nacional %>%
     source_note = "Nota: Elaboración propia."
   )
 
-gtsave(t11, "script_tablas/tablas_def/tabla_11.html")
+gtsave(t12, "script_tablas/tablas_def/tabla_12.html")
 
 
-### Tabla 12: Prestaciones por país de nacimiento (n y %), 2024
-tabla12 <- df %>%
+### Tabla 13: Prestaciones por país de nacimiento (n y %), 2024
+tabla13 <- df %>%
   filter(!is.na(fecha_prestacion)) %>%
   mutate(pais_nacimiento = ifelse(is.na(pais_nacimiento) | pais_nacimiento == "", "No consta", pais_nacimiento)) %>%
   group_by(pais_nacimiento) %>%
@@ -1093,12 +1196,12 @@ tabla12 <- df %>%
 
 # Añadir fila total
 fila_total <- data.frame(pais_nacimiento = "Total",
-                        n = sum(tabla18$n),
+                        n = sum(tabla13$n),
                         pct = 100)
-tabla18 <- bind_rows(tabla18, fila_total)
+tabla13 <- bind_rows(tabla13, fila_total)
 
 # Tabla gt
-t12 <- tabla12 %>%
+t13 <- tabla13 %>%
   gt() %>%
   tab_header(
     title = "Prestaciones por país de nacimiento, 2024"
@@ -1129,10 +1232,10 @@ t12 <- tabla12 %>%
     source_note = "Nota: Elaboración propia."
   )
 
-gtsave(t12, "script_tablas/tablas_def/tabla_12.html")
+gtsave(t13, "script_tablas/tablas_def/tabla_13.html")
 
 
-### Tabla 13: Especialidad del MR y MC (n y %), 2024
+### Tabla 14: Especialidad del MR y MC (n y %), 2024
 # Calcular n y % para MR
 tabla_mr <- df %>%
   mutate(especialidad_mr = ifelse(is.na(especialidad_mr) | especialidad_mr == "", "No consta", especialidad_mr)) %>%
@@ -1155,12 +1258,12 @@ tabla_mc <- tabla_mc %>%
 
 # Unir ambas tablas por especialidad
 especialidades <- union(tabla_mr$especialidad_mr, tabla_mc$especialidad_mc)
-tabla_13 <- tibble::tibble(Especialidad = especialidades) %>%
+tabla_14 <- tibble::tibble(Especialidad = especialidades) %>%
   left_join(tabla_mr, by = c("Especialidad" = "especialidad_mr")) %>%
   left_join(tabla_mc, by = c("Especialidad" = "especialidad_mc"))
 
 # Reemplazar NA por 0
-tabla_13 <- tabla_13 %>%
+tabla_14 <- tabla_14 %>%
   mutate(
     MR_Num = tidyr::replace_na(MR_Num, 0),
     MR_Pct = tidyr::replace_na(MR_Pct, 0),
@@ -1171,24 +1274,24 @@ tabla_13 <- tabla_13 %>%
 # Añadir fila total
 fila_total <- tibble::tibble(
   Especialidad = "Total",
-  MR_Num = sum(tabla_13$MR_Num, na.rm = TRUE),
+  MR_Num = sum(tabla_14$MR_Num, na.rm = TRUE),
   MR_Pct = 100,
-  MC_Num = sum(tabla_13$MC_Num, na.rm = TRUE),
+  MC_Num = sum(tabla_14$MC_Num, na.rm = TRUE),
   MC_Pct = 100
 )
-tabla_13 <- bind_rows(tabla_13, fila_total)
+tabla_14 <- bind_rows(tabla_14, fila_total)
 
 # Ordenar las filas: penúltima 'Otra', última 'No consta', luego 'Total'
 orden_especialidades <- c(
-  setdiff(tabla_13$Especialidad, c("Otra", "No consta", "Total")),
+  setdiff(tabla_14$Especialidad, c("Otra", "No consta", "Total")),
   "Otra", "No consta", "Total"
 )
-tabla_13 <- tabla_13 %>%
+tabla_14 <- tabla_14 %>%
   mutate(Especialidad = factor(Especialidad, levels = orden_especialidades)) %>%
   arrange(Especialidad)
 
 # Etiquetas para gt
-labels_13 <- c(
+labels_14 <- c(
   Especialidad = "Especialidad",
   MR_Num = "Num",
   MR_Pct = "%",
@@ -1197,13 +1300,13 @@ labels_13 <- c(
 )
 
 # Crear tabla gt 
-t13 <- tabla_13 %>%
+t14 <- tabla_14 %>%
   gt() %>%
   tab_header(
     title = "Especialidad del MR y MC",
     subtitle = "Num y %, 2024"
   ) %>%
-  cols_label(.list = labels_13) %>%
+  cols_label(.list = labels_14) %>%
   cols_align(
     align = "center",
     columns = -Especialidad
@@ -1232,13 +1335,13 @@ t13 <- tabla_13 %>%
     source_note = "Nota: Elaboración propia."
   )
 
-gtsave(t13, "script_tablas/tablas_def/tabla_13.html")
+gtsave(t14, "script_tablas/tablas_def/tabla_14.html")
 
 
-### Tabla 14: Prestaciones por lugar de prestación y CCAA (n y %), 2024
+### Tabla 15: Prestaciones por lugar de prestación y CCAA (n y %), 2024
 
 #Calcular tabla base de conteo
-tabla14_base <- df %>%
+tabla15_base <- df %>%
   filter(!is.na(fecha_prestacion)) %>%
   mutate(
     lugar_prestacion = ifelse(is.na(lugar_prestacion) | lugar_prestacion == "", "No consta", lugar_prestacion),
@@ -1252,30 +1355,30 @@ tabla14_base <- df %>%
   )
 
 #Calcular total por fila (solo para % internos, no se muestra)
-tabla14_base <- tabla14_base %>%
+tabla15_base <- tabla15_base %>%
   mutate(total_tmp = rowSums(across(-ccaa), na.rm = TRUE))
 
 #Calcular % por lugar de prestación en cada CCAA
-lugares <- setdiff(names(tabla14_base), c("ccaa", "total_tmp"))
+lugares <- setdiff(names(tabla15_base), c("ccaa", "total_tmp"))
 for (lugar in lugares) {
-  tabla14_base[[paste0(lugar, "_pct")]] <- round(100 * tabla14_base[[lugar]] / tabla14_base$total_tmp, 2)
+  tabla15_base[[paste0(lugar, "_pct")]] <- round(100 * tabla15_base[[lugar]] / tabla15_base$total_tmp, 2)
 }
 
 #Calcular fila total nacional y añadirla
-fila_total <- tabla14_base %>%
+fila_total <- tabla15_base %>%
   summarise(across(where(is.numeric), sum, na.rm = TRUE)) %>%
   mutate(ccaa = "Total")
 for (lugar in lugares) {
   fila_total[[paste0(lugar, "_pct")]] <- round(100 * fila_total[[lugar]] / fila_total$total_tmp, 2)
 }
-tabla14 <- bind_rows(tabla14_base, fila_total)
+tabla15 <- bind_rows(tabla15_base, fila_total)
 
 #Reordenar columnas: para cada lugar, n y % (sin total)
 col_order <- c("ccaa")
 for (lugar in lugares) {
   col_order <- c(col_order, lugar, paste0(lugar, "_pct"))
 }
-tabla14 <- tabla14[, col_order]
+tabla15 <- tabla15[, col_order]
 
 #Etiquetas para gt
 labels <- list(ccaa = "CC. AA.")
@@ -1285,13 +1388,13 @@ for (lugar in lugares) {
 }
 
 #Arreglo cutre para añadir Ceuta y Melilla
-tot<-tabla14[18,]
-tabla14[18,] <- NA
-tabla14$ccaa[18] <- "Ceuta"
-tabla14[19,]<-NA
-tabla14$ccaa[19] <- "Melilla"
-tabla14[20,] <- tot
-tabla14[18:19, 2:9] <- 0
+tot<-tabla15[18,]
+tabla15[18,] <- NA
+tabla15$ccaa[18] <- "Ceuta"
+tabla15[19,]<-NA
+tabla15$ccaa[19] <- "Melilla"
+tabla15[20,] <- tot
+tabla15[18:19, 2:9] <- 0
 
 
 #Añadir columna de tasa hospital/total
@@ -1301,30 +1404,30 @@ if (length(nombre_hospital) == 0) {
   stop("No se encontró columna de hospital en lugares de prestación")
 }
 #Calcular total de prestaciones por CCAA (sumando solo columnas de lugares)
-tabla14$total_prestaciones <- rowSums(tabla14[, lugares], na.rm = TRUE)
+tabla15$total_prestaciones <- rowSums(tabla15[, lugares], na.rm = TRUE)
 #Calcular tasa hospital
-tabla14$tasa_hospital <- ifelse(tabla14$total_prestaciones == 0, 0, round(100 * tabla14[[nombre_hospital[1]]] / tabla14$total_prestaciones, 1))
+tabla15$tasa_hospital <- ifelse(tabla15$total_prestaciones == 0, 0, round(100 * tabla15[[nombre_hospital[1]]] / tabla15$total_prestaciones, 1))
 
 # Insertar la columna después de la última columna de lugares
-pos_ultima <- max(match(paste0(lugares, "_pct"), names(tabla14)))
-tabla14 <- cbind(
-  tabla14[, 1:pos_ultima],
-  `Tasa hospital (%)` = tabla14$tasa_hospital,
-  tabla14[, (pos_ultima+1):(ncol(tabla14)-2)] # -2 para no repetir las columnas auxiliares
+pos_ultima <- max(match(paste0(lugares, "_pct"), names(tabla15)))
+tabla15 <- cbind(
+  tabla15[, 1:pos_ultima],
+  `Tasa hospital (%)` = tabla15$tasa_hospital,
+  tabla15[, (pos_ultima+1):(ncol(tabla15)-2)] # -2 para no repetir las columnas auxiliares
 )
 
 
 # Eliminar la última columna (auxiliar) si no es 'Tasa hospital (%)'
-if (names(tabla14)[ncol(tabla14)] != "Tasa hospital (%)") {
-  tabla14 <- tabla14[, -ncol(tabla14)]
+if (names(tabla15)[ncol(tabla15)] != "Tasa hospital (%)") {
+  tabla15 <- tabla15[, -ncol(tabla15)]
 }
-tabla14 <- tabla14[, !names(tabla14) %in% c("total_prestaciones", "tasa_hospital")]
+tabla15 <- tabla15[, !names(tabla15) %in% c("total_prestaciones", "tasa_hospital")]
 
 # Añadir etiqueta
 labels[["Tasa hospital (%)"]] <- "Tasa hospital (%)"
 
 # Crear la tabla gt con doble fila de encabezado (sin columna total)
-t14 <- tabla14 %>%
+t15 <- tabla15 %>%
   gt() %>%
   tab_header(
     title = "Prestaciones por lugar de prestación y CCAA, 2024"
@@ -1359,12 +1462,12 @@ t14 <- tabla14 %>%
     source_note = "Nota: Elaboración propia."
   )
 
-gtsave(t14, "script_tablas/tablas_def/tabla_14.html")
+gtsave(t15, "script_tablas/tablas_def/tabla_15.html")
 
 
-### Tabla 15: Denegaciones por CC. AA. y tasa de denegación por solicitudes totales 2024
+### Tabla 16: Denegaciones por CC. AA. y tasa de denegación por solicitudes totales 2024
 # Calcular solicitudes y denegaciones por CCAA
-tabla15_base <- df %>%
+tabla16_base <- df %>%
   mutate(
     ccaa = ifelse(is.na(ccaa) | ccaa == "" | ccaa == "PERDIDOS", "No consta", ccaa)
   ) %>%
@@ -1381,18 +1484,18 @@ tabla15_base <- df %>%
 # Añadir fila total nacional
 fila_total <- tibble(
   ccaa = "Total",
-  Solicitudes = sum(tabla15_base$Solicitudes, na.rm = TRUE),
-  Denegaciones = sum(tabla15_base$Denegaciones, na.rm = TRUE),
-  Tasa_denegacion = round(100 * sum(tabla15_base$Denegaciones, na.rm = TRUE) / sum(tabla15_base$Solicitudes, na.rm = TRUE), 2)
+  Solicitudes = sum(tabla16_base$Solicitudes, na.rm = TRUE),
+  Denegaciones = sum(tabla16_base$Denegaciones, na.rm = TRUE),
+  Tasa_denegacion = round(100 * sum(tabla16_base$Denegaciones, na.rm = TRUE) / sum(tabla16_base$Solicitudes, na.rm = TRUE), 2)
 )
 
-tabla15 <- bind_rows(tabla15_base, fila_total) %>%
+tabla16 <- bind_rows(tabla16_base, fila_total) %>%
   mutate(order = if_else(ccaa == "Total", 2L, 0L)) %>%
   arrange(order, ccaa) %>%
   select(-order)
 
 # Etiquetas para gt
-labels_15 <- list(
+labels_16 <- list(
   ccaa = "CC. AA.",
   Solicitudes = "Solicitudes",
   Denegaciones = "Denegaciones",
@@ -1400,12 +1503,12 @@ labels_15 <- list(
 )
 
 # Crear tabla gt
-t15 <- tabla15 %>%
+t16 <- tabla16 %>%
   gt() %>%
   tab_header(
     title = "Denegaciones por CC. AA. y tasa de denegación por solicitudes totales 2024"
   ) %>%
-  cols_label(.list = labels_15) %>%
+  cols_label(.list = labels_16) %>%
   cols_align(
     align = "center",
     columns = -ccaa
@@ -1423,10 +1526,10 @@ t15 <- tabla15 %>%
     source_note = "Nota: Elaboración propia."
   )
 
-gtsave(t15, "script_tablas/tablas_def/tabla_15.html")
+gtsave(t16, "script_tablas/tablas_def/tabla_16.html")
 
 
-### Tabla 16: Denegaciones por tramo de edad y sexo (n, solicitudes y tasa) 2024
+### Tabla 17: Denegaciones por tramo de edad y sexo (n, solicitudes y tasa) 2024
 # Calcular solicitudes y denegaciones por edad y sexo
 tabla_edad_solicitudes <- df %>%
   mutate(
@@ -1501,7 +1604,7 @@ if ("Denegaciones_No consta" %in% names(tabla_edad_wide)) {
 tabla_edad_gt <- tabla_edad_wide[, cols_gt]
 
 # Formatear y guardar tabla con gt
-tabla_16 <- tabla_edad_gt %>%
+tabla_17 <- tabla_edad_gt %>%
   gt() %>%
   tab_header(
     title = "Denegaciones por tramo de edad y sexo",
@@ -1569,11 +1672,11 @@ tabla_16 <- tabla_edad_gt %>%
     source_note = "Nota: Elaboración propia."
   )
 
-gtsave(tabla_16, "script_tablas/tablas_def/tabla_16.html")
+gtsave(tabla_17, "script_tablas/tablas_def/tabla_17.html")
 
 
-### Tabla 17: Denegaciones por enfermedad de base (n, solicitudes y tasa) 2024
-tabla17_base <- df %>%
+### Tabla 18: Denegaciones por enfermedad de base (n, solicitudes y tasa) 2024
+tabla18_base <- df %>%
   mutate(
     patologia = ifelse(is.na(patologia) | patologia == "", "No consta", patologia)
   ) %>%
@@ -1590,18 +1693,18 @@ tabla17_base <- df %>%
 # Añadir fila total nacional
 fila_total <- tibble(
   patologia = "Total",
-  Solicitudes = sum(tabla17_base$Solicitudes, na.rm = TRUE),
-  Denegaciones = sum(tabla17_base$Denegaciones, na.rm = TRUE),
-  Tasa_denegacion = round(100 * sum(tabla17_base$Denegaciones, na.rm = TRUE) / sum(tabla17_base$Solicitudes, na.rm = TRUE), 2)
+  Solicitudes = sum(tabla18_base$Solicitudes, na.rm = TRUE),
+  Denegaciones = sum(tabla18_base$Denegaciones, na.rm = TRUE),
+  Tasa_denegacion = round(100 * sum(tabla18_base$Denegaciones, na.rm = TRUE) / sum(tabla18_base$Solicitudes, na.rm = TRUE), 2)
 )
 
-tabla17 <- bind_rows(tabla17_base, fila_total) %>%
+tabla18 <- bind_rows(tabla18_base, fila_total) %>%
   mutate(order = if_else(patologia == "Total", 2L, 0L)) %>%
   arrange(order, patologia) %>%
   select(-order)
 
 # Etiquetas para gt
-labels_17 <- list(
+labels_18 <- list(
   patologia = "Enfermedad de base",
   Denegaciones = "Núm",
   Solicitudes = "Solicitudes",
@@ -1609,13 +1712,13 @@ labels_17 <- list(
 )
 
 # Crear tabla gt
-t17 <- tabla17 %>%
+t18 <- tabla18 %>%
   gt() %>%
   tab_header(
     title = "Denegaciones por enfermedad de base",
     subtitle = "Núm, solicitudes y tasa de denegación (%) por enfermedad de base"
   ) %>%
-  cols_label(.list = labels_17) %>%
+  cols_label(.list = labels_18) %>%
   cols_align(
     align = "center",
     columns = -patologia
@@ -1633,10 +1736,10 @@ t17 <- tabla17 %>%
     source_note = "Nota: Elaboración propia."
   )
 
-gtsave(t17, "script_tablas/tablas_def/tabla_17.html")
+gtsave(t18, "script_tablas/tablas_def/tabla_18.html")
 
 
-### Tabla 18: Tasa de denegación por instancia (MR, MC, CGyE) 2024
+### Tabla 19: Tasa de denegación por instancia (MR, MC, CGyE) 2024
 # Cada denegación solo cuenta en la primera instancia donde aparece 'No'
 denegacion_instancia[df$informe_mr == "No" & !is.na(df$informe_mr)] <- "MR"
 denegacion_instancia[is.na(denegacion_instancia) & df$informe_mc == "No" & !is.na(df$informe_mc)] <- "MC"
@@ -1657,7 +1760,7 @@ denegacion_instancia[
   !(df$informe_mc == "No" & !is.na(df$informe_mc))
 ] <- "CGyE"
 
-tabla18_base <- tibble::tibble(
+tabla19_base <- tibble::tibble(
   Instancia = c("MR", "MC", "CGyE"),
   Solicitudes_que_reciben = c(
     sum(df$informe_mr != "" & !is.na(df$informe_mr)),
@@ -1670,7 +1773,7 @@ tabla18_base <- tibble::tibble(
     sum(denegacion_instancia == "CGyE", na.rm = TRUE)
   )
 )
-tabla18_base <- tabla18_base %>%
+tabla19_base <- tabla19_base %>%
   mutate(Tasa = ifelse(Solicitudes_que_reciben == 0, NA, round(100 * Denegaciones / Solicitudes_que_reciben, 2)))
 
 # Añadir fila total
@@ -1680,10 +1783,10 @@ fila_total <- tibble::tibble(
   Denegaciones = sum(tabla18_base$Denegaciones, na.rm = TRUE),
   Tasa = round(100 * sum(tabla18_base$Denegaciones, na.rm = TRUE) / sum(tabla18_base$Solicitudes_que_reciben, na.rm = TRUE), 2)
 )
-tabla18 <- bind_rows(tabla18_base, fila_total)
+tabla19 <- bind_rows(tabla19_base, fila_total)
 
 # Etiquetas para gt
-labels_18 <- list(
+labels_19 <- list(
   Instancia = "",
   Solicitudes_que_reciben = "Solicitudes que reciben",
   Denegaciones = "Denegaciones",
@@ -1691,12 +1794,12 @@ labels_18 <- list(
 )
 
 # Crear tabla gt con formato igual a tabla 17
-t18 <- tabla18 %>%
+t19 <- tabla19 %>%
   gt() %>%
   tab_header(
     title = "Tasa de denegación por instancia 2024"
   ) %>%
-  cols_label(.list = labels_18) %>%
+  cols_label(.list = labels_19) %>%
   cols_align(
     align = "center",
     columns = -Instancia
@@ -1714,11 +1817,11 @@ t18 <- tabla18 %>%
     source_note = "Nota: Elaboración propia."
   )
 
-gtsave(t18, "script_tablas/tablas_def/tabla_18.html")
+gtsave(t19, "script_tablas/tablas_def/tabla_19.html")
 
-###Tabla 19: Reclamaciones a la CGyE por CCAA (n y %), 2024
+###Tabla 20: Reclamaciones a la CGyE por CCAA (n y %), 2024
 
-tabla19 <- df %>%
+tabla20 <- df %>%
   mutate(
     ccaa = ifelse(is.na(ccaa) | ccaa == "" | ccaa == "PERDIDOS", "No consta", ccaa)
   ) %>%
@@ -1734,19 +1837,19 @@ tabla19 <- df %>%
 # Añadir fila total nacional
 fila_total <- tibble(
   ccaa = "Total",
-  reclamaciones_totales = sum(tabla19$reclamaciones_totales, na.rm = TRUE),
-  favorables = sum(tabla19$favorables, na.rm = TRUE),
-  pct_favorables = ifelse(sum(tabla19$reclamaciones_totales, na.rm = TRUE) == 0, NA,
-                          round(100 * sum(tabla19$favorables, na.rm = TRUE) / sum(tabla19$reclamaciones_totales, na.rm = TRUE), 2))
+  reclamaciones_totales = sum(tabla20$reclamaciones_totales, na.rm = TRUE),
+  favorables = sum(tabla20$favorables, na.rm = TRUE),
+  pct_favorables = ifelse(sum(tabla20$reclamaciones_totales, na.rm = TRUE) == 0, NA,
+                          round(100 * sum(tabla20$favorables, na.rm = TRUE) / sum(tabla20$reclamaciones_totales, na.rm = TRUE), 2))
 )
 
-tabla19 <- bind_rows(tabla19, fila_total)
+tabla20 <- bind_rows(tabla20, fila_total)
 
 # Reemplazar NA por 0
-tabla19[is.na(tabla19)] <- 0
+tabla20[is.na(tabla20)] <- 0
 
 # Formato gt con estilo en la fila Total
-t19 <- tabla19 %>%
+t20 <- tabla20 %>%
   gt() %>%
   tab_header(
     title = "Reclamaciones a la CGyE por CC.AA. 2024"
@@ -1778,11 +1881,11 @@ t19 <- tabla19 %>%
     source_note = "Nota: Elaboración propia."
   )
 
-gtsave(t19, "script_tablas/tablas_def/tabla_19.html")
+gtsave(t20, "script_tablas/tablas_def/tabla_20.html")
 
 
-###Tabla 20: Revocaciones por CC.AA (n y % respecto a solicitudes), 2024
-tabla_20 <- df %>%
+###Tabla 21: Revocaciones por CC.AA (n y % respecto a solicitudes), 2024
+tabla_21 <- df %>%
   group_by(ccaa) %>%
   summarise(
     Solicitudes = n(),
@@ -1793,17 +1896,17 @@ tabla_20 <- df %>%
   )
 
 # Añadir fila total nacional
-fila_total <- tabla_20 %>%
+fila_total <- tabla_21 %>%
   summarise(
     ccaa = "Total",
     Solicitudes = sum(Solicitudes, na.rm = TRUE),
     Revocaciones = sum(Revocaciones, na.rm = TRUE),
     Porcentaje = round(Revocaciones / Solicitudes * 100, 2)
   )
-tabla_20 <- bind_rows(tabla_20, fila_total)
+tabla_21 <- bind_rows(tabla_21, fila_total)
 
 # Formato gt
-t20 <- tabla_20 %>%
+t21 <- tabla_21 %>%
   gt() %>%
   tab_header(
     title = "Revocaciones por CC.AA.",
@@ -1838,17 +1941,17 @@ t20 <- tabla_20 %>%
     source_note = "Nota: Elaboración propia."
   )
 
-gtsave(t20, "script_tablas/tablas_def/tabla_20.html")
+gtsave(t21, "script_tablas/tablas_def/tabla_21.html")
 
-###Tabla 21: Tasa de revocación frente a solicitudes totales (n y %), histórico 2021-2024
-tabla_21 <- tibble::tibble(
+###Tabla 22: Tasa de revocación frente a solicitudes totales (n y %), histórico 2021-2024
+tabla_22 <- tibble::tibble(
   Año = c("2021", "2022", "2023", "2024"),
   Revocaciones_totales = c(7, 1, 21, 48),
   Solicitudes_totales = c(173, 576, 766, 917)
 )
 
 # Calcular tasa de revocación por año
-tabla_21 <- tabla_21 %>%
+tabla_22 <- tabla_22 %>%
   mutate(
     Tasa_revocacion = round(Revocaciones_totales / Solicitudes_totales * 100, 2)
   )
@@ -1856,14 +1959,14 @@ tabla_21 <- tabla_21 %>%
 # Añadir fila total
 fila_total <- tibble::tibble(
   Año = "Total",
-  Revocaciones_totales = sum(tabla_21$Revocaciones_totales, na.rm = TRUE),
-  Solicitudes_totales = sum(tabla_21$Solicitudes_totales, na.rm = TRUE),
-  Tasa_revocacion = round(sum(tabla_21$Revocaciones_totales, na.rm = TRUE) / sum(tabla_21$Solicitudes_totales, na.rm = TRUE) * 100, 2)
+  Revocaciones_totales = sum(tabla_22$Revocaciones_totales, na.rm = TRUE),
+  Solicitudes_totales = sum(tabla_22$Solicitudes_totales, na.rm = TRUE),
+  Tasa_revocacion = round(sum(tabla_22$Revocaciones_totales, na.rm = TRUE) / sum(tabla_22$Solicitudes_totales, na.rm = TRUE) * 100, 2)
 )
-tabla_21 <- dplyr::bind_rows(tabla_21, fila_total)
+tabla_22 <- dplyr::bind_rows(tabla_22, fila_total)
 
 # Etiquetas para gt
-labels_21 <- c(
+labels_22 <- c(
   Año = "Año",
   Revocaciones_totales = "Revocaciones totales",
   Solicitudes_totales = "Solicitudes totales",
@@ -1871,13 +1974,13 @@ labels_21 <- c(
 )
 
 # Crear tabla gt 
-t21 <- tabla_21 %>%
+t22 <- tabla_22 %>%
   gt() %>%
   tab_header(
     title = "Tasa de revocación frente a solicitudes totales",
     subtitle = "Num y %, histórico 2021-2024"
   ) %>%
-  cols_label(.list = labels_21) %>%
+  cols_label(.list = labels_22) %>%
   cols_align(
     align = "center",
     columns = -Año
@@ -1896,9 +1999,9 @@ t21 <- tabla_21 %>%
     source_note = "Nota: Elaboración propia."
   )
 
-gtsave(t21, "script_tablas/tablas_def/tabla_21.html")
+gtsave(t22, "script_tablas/tablas_def/tabla_22.html")
 
-###Tabla 22: Revocaciones por sexo y edad (n y %), 2024
+###Tabla 23: Revocaciones por sexo y edad (n y %), 2024
 revocaciones_edad_sexo <- df %>%
   filter(revocacion == 1) %>%
   mutate(
@@ -1966,7 +2069,7 @@ cols_gt <- c("edad",
 revocaciones_edad_gt <- revocaciones_edad_sexo[, cols_gt]
 
 # Formatear y guardar tabla con gt
-t22 <- revocaciones_edad_gt %>%
+t23 <- revocaciones_edad_gt %>%
   gt() %>%
   tab_header(
     title = "Revocaciones por sexo y edad",
@@ -2014,10 +2117,10 @@ t22 <- revocaciones_edad_gt %>%
     source_note = "Nota: Elaboración propia."
   )
 
-gtsave(t22, "script_tablas/tablas_def/tabla_22.html")
+gtsave(t23, "script_tablas/tablas_def/tabla_23.html")
 
-### Tabla 23: Revocaciones por enfermedad de base (n, solicitudes y tasa) 2024
-tabla23_base <- df %>%
+### Tabla 24: Revocaciones por enfermedad de base (n, solicitudes y tasa) 2024
+tabla24_base <- df %>%
   mutate(
     patologia = ifelse(is.na(patologia) | patologia == "", "No consta", patologia)
   ) %>%
@@ -2034,18 +2137,18 @@ tabla23_base <- df %>%
 # Añadir fila total nacional
 fila_total <- tibble(
   patologia = "Total",
-  Solicitudes = sum(tabla23_base$Solicitudes, na.rm = TRUE),
-  Revocaciones = sum(tabla23_base$Revocaciones, na.rm = TRUE),
-  Tasa_revocacion = round(100 * sum(tabla23_base$Revocaciones, na.rm = TRUE) / sum(tabla23_base$Solicitudes, na.rm = TRUE), 2)
+  Solicitudes = sum(tabla24_base$Solicitudes, na.rm = TRUE),
+  Revocaciones = sum(tabla24_base$Revocaciones, na.rm = TRUE),
+  Tasa_revocacion = round(100 * sum(tabla24_base$Revocaciones, na.rm = TRUE) / sum(tabla24_base$Solicitudes, na.rm = TRUE), 2)
 )
 
-tabla23 <- bind_rows(tabla23_base, fila_total) %>%
+tabla24 <- bind_rows(tabla24_base, fila_total) %>%
   mutate(order = if_else(patologia == "Total", 2L, 0L)) %>%
   arrange(order, patologia) %>%
   select(-order)
 
 # Etiquetas para gt
-labels_23 <- list(
+labels_24 <- list(
   patologia = "Enfermedad de base",
   Revocaciones = "Núm",
   Solicitudes = "Solicitudes",
@@ -2053,13 +2156,13 @@ labels_23 <- list(
 )
 
 # Crear tabla gt
-t23 <- tabla23 %>%
+t24 <- tabla24 %>%
   gt() %>%
   tab_header(
     title = "Revocaciones por enfermedad de base",
     subtitle = "Núm, solicitudes y tasa de revocación (%) por enfermedad de base"
   ) %>%
-  cols_label(.list = labels_23) %>%
+  cols_label(.list = labels_24) %>%
   cols_align(
     align = "center",
     columns = -patologia
@@ -2077,10 +2180,10 @@ t23 <- tabla23 %>%
     source_note = "Nota: Elaboración propia."
   )
 
-gtsave(t23, "script_tablas/tablas_def/tabla_23.html")
+gtsave(t24, "script_tablas/tablas_def/tabla_24.html")
 
-###Tabla 24: Fase del proceso en que se revoca (n y % respecto a revocaciones totales) 2024
-tabla_24 <- df %>%
+###Tabla 25: Fase del proceso en que se revoca (n y % respecto a revocaciones totales) 2024
+tabla_25 <- df %>%
   filter(revocacion == 1) %>%
   mutate(
     tipo_revocacion = ifelse(is.na(tipo_revocacion) | tipo_revocacion == "", "No consta", tipo_revocacion)
@@ -2089,10 +2192,10 @@ tabla_24 <- df %>%
   rename(Num = n)
 
 # Calcular total de revocaciones
-total_revocaciones <- sum(tabla_24$Num, na.rm = TRUE)
+total_revocaciones <- sum(tabla_25$Num, na.rm = TRUE)
 
 # Calcular porcentaje por fase
-tabla_24 <- tabla_24 %>%
+tabla_25 <- tabla_25 %>%
   mutate(
     Porcentaje = round(Num / total_revocaciones * 100, 2)
   )
@@ -2101,25 +2204,25 @@ tabla_24 <- tabla_24 %>%
 fila_total <- tibble(
   tipo_revocacion = "Revocaciones totales",
   Num = total_revocaciones,
-  Porcentaje = round(sum(tabla_24$Porcentaje, na.rm = TRUE), 2)
+  Porcentaje = round(sum(tabla_25$Porcentaje, na.rm = TRUE), 2)
 )
-tabla_24 <- bind_rows(tabla_24, fila_total)
+tabla_25 <- bind_rows(tabla_25, fila_total)
 
 # Etiquetas para gt
-labels_24 <- c(
+labels_25 <- c(
   tipo_revocacion = "Fase de la revocación",
   Num = "Num",
   Porcentaje = "Tasa de revocación por fase (%)"
 )
 
-# Crear tabla gt con doble encabezado 
-t24 <- tabla_24 %>%
+# Crear tabla gt con doble encabezado
+t25 <- tabla_25 %>%
   gt() %>%
   tab_header(
     title = "Fase del proceso en que se revoca",
     subtitle = "Número y % respecto a revocaciones totales, 2024"
   ) %>%
-  cols_label(.list = labels_24) %>%
+  cols_label(.list = labels_25) %>%
   cols_align(
     align = "center",
     columns = -tipo_revocacion
@@ -2138,9 +2241,9 @@ t24 <- tabla_24 %>%
     source_note = "Nota: Elaboración propia."
   )
 
-gtsave(t24, "script_tablas/tablas_def/tabla_24.html")
+gtsave(t25, "script_tablas/tablas_def/tabla_25.html")
 
-###Tabla 25: Tasa de fallecimientos durante tramitación por CC. AA. (%) 2024
+###Tabla 26: Tasa de fallecimientos durante tramitación por CC. AA. (%) 2024
 # Calcular solicitudes y fallecimientos por ccaa
 solicitudes_fallecimientos <- df %>%
   mutate(
@@ -2166,7 +2269,7 @@ fila_total <- tibble(
 solicitudes_fallecimientos <- bind_rows(solicitudes_fallecimientos, fila_total)
 
 # Tabla gt
-tabla25 <- solicitudes_fallecimientos %>%
+tabla26 <- solicitudes_fallecimientos %>%
   gt() %>%
   tab_header(
     title = "Tasa de fallecimientos durante tramitación por CC. AA. (%) 2024"
@@ -2194,9 +2297,9 @@ tabla25 <- solicitudes_fallecimientos %>%
     source_note = "Nota: Elaboración propia."
   )
 
-gtsave(tabla25, "script_tablas/tablas_def/tabla_25.html")
+gtsave(tabla26, "script_tablas/tablas_def/tabla_26.html")
 
-### Tabla 26: Fallecimientos durante tramitacion por sexo y edad (n y %)
+### Tabla 27: Fallecimientos durante tramitacion por sexo y edad (n y %)
 fallecimientos_edad_sexo <- df %>%
   filter(fallecimiento_tramitacion == 1) %>%
   mutate(
@@ -2255,7 +2358,7 @@ fila_total$pct_Total  <- sum(fallecimientos_edad_sexo$pct_Total, na.rm = TRUE)
 fallecimientos_edad_sexo <- bind_rows(fallecimientos_edad_sexo, fila_total)
 
 ## Tabla gt
-t26 <- fallecimientos_edad_sexo %>%
+t27 <- fallecimientos_edad_sexo %>%
   gt() %>%
   tab_header(
     title = "Fallecimientos durante tramitación por sexo y edad",
@@ -2321,10 +2424,10 @@ t26 <- fallecimientos_edad_sexo %>%
     source_note = "Nota: Elaboración propia."
   )
 
-gtsave(t26, "script_tablas/tablas_def/tabla_26.html")
+gtsave(t27, "script_tablas/tablas_def/tabla_27.html")
 
-### Tabla 27: Fallecimientos durante tramitación por enfermedad de base (n, solicitudes y tasa) 2024
-tabla27_base <- df %>%
+### Tabla 28: Fallecimientos durante tramitación por enfermedad de base (n, solicitudes y tasa) 2024
+tabla28_base <- df %>%
   mutate(
     patologia = ifelse(is.na(patologia) | patologia == "", "No consta", patologia)
   ) %>%
@@ -2339,20 +2442,20 @@ tabla27_base <- df %>%
   )
 
 # Añadir fila total nacional
-fila_total_27 <- tibble(
+fila_total_28 <- tibble(
   patologia = "Total",
-  Solicitudes = sum(tabla27_base$Solicitudes, na.rm = TRUE),
-  Fallecimientos_base = sum(tabla27_base$Fallecimientos_base, na.rm = TRUE),
-  Tasa_fallecimiento = round(100 * sum(tabla27_base$Fallecimientos_base, na.rm = TRUE) / sum(tabla27_base$Solicitudes, na.rm = TRUE), 2)
+  Solicitudes = sum(tabla28_base$Solicitudes, na.rm = TRUE),
+  Fallecimientos_base = sum(tabla28_base$Fallecimientos_base, na.rm = TRUE),
+  Tasa_fallecimiento = round(100 * sum(tabla28_base$Fallecimientos_base, na.rm = TRUE) / sum(tabla28_base$Solicitudes, na.rm = TRUE), 2)
 )
 
-tabla27 <- bind_rows(tabla27_base, fila_total_27) %>%
+tabla28 <- bind_rows(tabla28_base, fila_total_28) %>%
   mutate(order = if_else(patologia == "Total", 2L, 0L)) %>%
   arrange(order, patologia) %>%
   select(-order)
 
 # Etiquetas para gt
-labels_27 <- list(
+labels_28 <- list(
   patologia = "Enfermedad de base",
   Fallecimientos_base = "Núm",
   Solicitudes = "Solicitudes",
@@ -2360,13 +2463,13 @@ labels_27 <- list(
 )
 
 # Crear tabla gt
-t27 <- tabla27 %>%
+t28 <- tabla28 %>%
   gt() %>%
   tab_header(
     title = "Fallecimientos por enfermedad de base",
     subtitle = "Núm, solicitudes y tasa de fallecimiento (%) por enfermedad de base"
   ) %>%
-  cols_label(.list = labels_27) %>%
+  cols_label(.list = labels_28) %>%
   cols_align(
     align = "center",
     columns = -patologia
@@ -2384,33 +2487,33 @@ t27 <- tabla27 %>%
     source_note = "Nota: Elaboración propia."
   )
 
-gtsave(t27, "script_tablas/tablas_def/tabla_27.html")
+gtsave(t28, "script_tablas/tablas_def/tabla_28.html")
 
-### Tabla 28: Tiempos del procedimiento por CC. AA. 2024 (media y mediana)
+### Tabla 29: Tiempos del procedimiento por CC. AA. 2024 (media y mediana)
 df_tiempos <- df %>%
   mutate(
     tiempo_1sol_prestacion = ifelse(
-      !is.na(fecha_prestacion) & !is.na(fecha_primera_solicitud), #& fecha_prestacion >= fecha_primera_solicitud,
+      !is.na(fecha_prestacion) & !is.na(fecha_primera_solicitud),
       as.numeric(fecha_prestacion - fecha_primera_solicitud),
       NA
     ),
     tiempo_1sol_2sol = ifelse(
-      !is.na(fecha_segunda_solicitud) & !is.na(fecha_primera_solicitud), #& fecha_segunda_solicitud >= fecha_primera_solicitud,
+      !is.na(fecha_segunda_solicitud) & !is.na(fecha_primera_solicitud),
       as.numeric(fecha_segunda_solicitud - fecha_primera_solicitud),
       NA
     ),
     tiempo_2sol_mc = ifelse(
-      !is.na(fecha_informe_mc) & !is.na(fecha_segunda_solicitud), # & fecha_informe_mc >= fecha_segunda_solicitud,
+      !is.na(fecha_informe_mc) & !is.na(fecha_segunda_solicitud),
       as.numeric(fecha_informe_mc - fecha_segunda_solicitud),
       NA
     ),
     tiempo_mc_cgye = ifelse(
-      !is.na(fecha_informe_cgye) & !is.na(fecha_informe_mc), # & fecha_informe_cgye >= fecha_informe_mc,
+      !is.na(fecha_informe_cgye) & !is.na(fecha_informe_mc),
       as.numeric(fecha_informe_cgye - fecha_informe_mc),
       NA
     ),
     tiempo_cgye_prestacion = ifelse(
-      !is.na(fecha_prestacion) & !is.na(fecha_informe_cgye), # & fecha_prestacion >= fecha_informe_cgye,
+      !is.na(fecha_prestacion) & !is.na(fecha_informe_cgye) & !is.na(fecha_informe_mc) & (fecha_prestacion >= fecha_informe_cgye),
       as.numeric(fecha_prestacion - fecha_informe_cgye),
       NA
     )
@@ -2451,7 +2554,7 @@ fila_total <- tibble(
 tabla_tiempos_ccaa <- bind_rows(tabla_tiempos_ccaa, fila_total)
 
 # Formatear tabla con gt
-t28 <- tabla_tiempos_ccaa %>%
+t29 <- tabla_tiempos_ccaa %>%
   gt(rowname_col = "ccaa") %>%
   tab_header(
     title = "Tiempos (en días) entre hitos del proceso por CCAA",
@@ -2499,9 +2602,9 @@ t28 <- tabla_tiempos_ccaa %>%
     data_row.padding = px(3)
   )
 
-gtsave(t28, "script_tablas/tablas_def/tabla_28.html")
+gtsave(t29, "script_tablas/tablas_def/tabla_29.html")
 
-### Tabla 29: Días entre reclamación y resolución de la CGyE por CCAA (media y mediana)
+### Tabla 30: Días entre reclamación y resolución de la CGyE por CCAA (media y mediana)
 df_tiempos <- df %>%
   mutate(
     tiempo_reclamacion_resolucion = ifelse(
@@ -2530,7 +2633,7 @@ fila_total <- tibble(
 tabla_tiempos_ccaa <- bind_rows(tabla_tiempos_ccaa, fila_total)
 
 # Formatear tabla con gt
-t29 <- tabla_tiempos_ccaa %>%
+t30 <- tabla_tiempos_ccaa %>%
   gt(rowname_col = "ccaa") %>%
   tab_header(
     title = "Días entre reclamación y resolución de la CGyE por CCAA",
@@ -2550,9 +2653,9 @@ t29 <- tabla_tiempos_ccaa %>%
     data_row.padding = px(3)
   )
 
-gtsave(t29, "script_tablas/tablas_def/tabla_29.html")
+gtsave(t30, "script_tablas/tablas_def/tabla_30.html")
 
-### Tabla 30: Tiempos del procedimiento 2021-2024 (media y mediana)
+### Tabla 31: Tiempos del procedimiento 2021-2024 (media y mediana)
 df_tiempos <- df %>%
   mutate(
     tiempo_1sol_prestacion = ifelse(
@@ -2618,7 +2721,7 @@ tabla_tiempos <- tibble::tibble(
 print(tabla_tiempos)
 
 # Hacer tabla gt con el resto de datos manuales
-tabla_30 <- tibble::tibble(
+tabla_31 <- tibble::tibble(
    LORE = c(
     "Entre la 1ª solicitud y prestación",
     "Entre la 1ª y la 2ª solicitud",
@@ -2644,7 +2747,7 @@ tabla_30 <- tibble::tibble(
   Mediana_2024 = c(62, 16, 9, 10, 15, 19)
 )
 
-labels_30 <- c(
+labels_31 <- c(
   Referencia_LORE = "Días según LORE",
   LORE = "",
   Media_2021 = "Media",
@@ -2656,12 +2759,12 @@ labels_30 <- c(
   Mediana_2024 = "Mediana"
 )
 
-t30 <- tabla_30 %>%
+t31 <- tabla_31 %>%
   gt() %>%
   tab_header(
     title = "Tiempos de procedimiento, histórico 2021-2024"
   ) %>%
-  cols_label(.list = labels_30) %>%
+  cols_label(.list = labels_31) %>%
   cols_align(
     align = "center",
     columns = -Referencia_LORE
@@ -2690,11 +2793,11 @@ t30 <- tabla_30 %>%
     source_note = "* Este plazo no está establecido como tal en la LORE. Se puede realizar una estimación aproximada de un plazo entre 30 y 40 días para la resolución de la CGyE de acuerdo con los plazos mínimos y máximos establecidos en la Ley. Una vez que la CGyE ha resuelto favorablemente, el plazo es muy variable puesto que el solicitante dispone de un margen de flexibilidad de hasta 2 meses para recibir la prestación."
   )
 
-gtsave(t30, "script_tablas/tablas_def/tabla_30.html")
+gtsave(t31, "script_tablas/tablas_def/tabla_31.html")
 
 
-###Tabla 31: Solicitudes, solicitudes aprobadas, aplazamientos y tasa de aplazamientos por CC.AA 2024.
-tabla_31 <- df %>%
+###Tabla 32: Solicitudes, solicitudes aprobadas, aplazamientos y tasa de aplazamientos por CC.AA 2024.
+tabla_32 <- df %>%
   group_by(ccaa) %>%
   summarise(
     Solicitudes = n(),
@@ -2708,15 +2811,15 @@ tabla_31 <- df %>%
 # Añadir fila total
 fila_total <- tibble::tibble(
   ccaa = "Total",
-  Solicitudes = sum(tabla_30$Solicitudes, na.rm = TRUE),
-  Solicitudes_aprobadas = sum(tabla_30$Solicitudes_aprobadas, na.rm = TRUE),
-  Aplazamientos = sum(tabla_30$Aplazamientos, na.rm = TRUE),
-  Tasa_aplazamientos_aprobadas = round(sum(tabla_30$Aplazamientos, na.rm = TRUE) / ifelse(sum(tabla_30$Solicitudes_aprobadas, na.rm = TRUE) == 0, NA, sum(tabla_30$Solicitudes_aprobadas, na.rm = TRUE)) * 100, 2)
+  Solicitudes = sum(tabla_32$Solicitudes, na.rm = TRUE),
+  Solicitudes_aprobadas = sum(tabla_32$Solicitudes_aprobadas, na.rm = TRUE),
+  Aplazamientos = sum(tabla_32$Aplazamientos, na.rm = TRUE),
+  Tasa_aplazamientos_aprobadas = round(sum(tabla_32$Aplazamientos, na.rm = TRUE) / ifelse(sum(tabla_32$Solicitudes_aprobadas, na.rm = TRUE) == 0, NA, sum(tabla_32$Solicitudes_aprobadas, na.rm = TRUE)) * 100, 2)
 )
-tabla_31 <- bind_rows(tabla_31, fila_total)
+tabla_32 <- bind_rows(tabla_32, fila_total)
 
 # Etiquetas para gt
-labels_31 <- c(
+labels_32 <- c(
   ccaa = "CC. AA.",
   Solicitudes = "Solicitudes",
   Solicitudes_aprobadas = "Solicitudes aprobadas",
@@ -2724,12 +2827,12 @@ labels_31 <- c(
   Tasa_aplazamientos_aprobadas = "Tasa de aplazamientos por solicitudes aprobadas (%)"
 )
 
-t31 <- tabla_31 %>%
+t32 <- tabla_32 %>%
   gt() %>%
   tab_header(
     title = "Solicitudes, solicitudes aprobadas, aplazamientos y tasa de aplazamientos por CC.AA. 2024"
   ) %>%
-  cols_label(.list = labels_31) %>%
+  cols_label(.list = labels_32) %>%
   cols_align(
     align = "center",
     columns = -ccaa
@@ -2745,10 +2848,10 @@ t31 <- tabla_31 %>%
     )
   )
 
-gtsave(t31, "script_tablas/tablas_def/tabla_31.html")
+gtsave(t32, "script_tablas/tablas_def/tabla_32.html")
 
 
-### Tabla 32: Aplazamientos por sexo y edad (n y %), 2024
+### Tabla 33: Aplazamientos por sexo y edad (n y %), 2024
 niveles_edad <- c("<30", "30-39", "40-49", "50-59", "60-69", "70-79", ">80")
 
 aplazamientos_edad_sexo <- df %>%
@@ -2819,7 +2922,7 @@ cols_gt <- c("edad",
 aplazamientos_edad_gt <- aplazamientos_edad_sexo[, cols_gt]
 
 # Formatear y guardar tabla con gt
-t32 <- aplazamientos_edad_gt %>%
+t33 <- aplazamientos_edad_gt %>%
   gt() %>%
   tab_header(
     title = "Aplazamientos por sexo y edad",
@@ -2867,10 +2970,10 @@ t32 <- aplazamientos_edad_gt %>%
     source_note = "Nota: Elaboración propia."
   )
 
-gtsave(t32, "script_tablas/tablas_def/tabla_32.html")
+gtsave(t33, "script_tablas/tablas_def/tabla_33.html")
 
-### Tabla 33: Aplazamientos durante tramitación por enfermedad de base (n, solicitudes y tasa) 2024
-tabla33_base <- df %>%
+### Tabla 34: Aplazamientos durante tramitación por enfermedad de base (n, solicitudes y tasa) 2024
+tabla34_base <- df %>%
   mutate(
     patologia = ifelse(is.na(patologia) | patologia == "", "No consta", patologia)
   ) %>%
@@ -2885,20 +2988,20 @@ tabla33_base <- df %>%
   )
 
 # Añadir fila total nacional
-fila_total_33 <- tibble(
+fila_total_34 <- tibble(
   patologia = "Total",
-  Solicitudes = sum(tabla33_base$Solicitudes, na.rm = TRUE),
-  Aplazamientos = sum(tabla33_base$Aplazamientos, na.rm = TRUE),
-  Tasa_aplazamiento = round(100 * sum(tabla33_base$Aplazamientos, na.rm = TRUE) / sum(tabla33_base$Solicitudes, na.rm = TRUE), 2)
+  Solicitudes = sum(tabla34_base$Solicitudes, na.rm = TRUE),
+  Aplazamientos = sum(tabla34_base$Aplazamientos, na.rm = TRUE),
+  Tasa_aplazamiento = round(100 * sum(tabla34_base$Aplazamientos, na.rm = TRUE) / sum(tabla34_base$Solicitudes, na.rm = TRUE), 2)
 )
 
-tabla33 <- bind_rows(tabla33_base, fila_total_33) %>%
+tabla34 <- bind_rows(tabla34_base, fila_total_34) %>%
   mutate(order = if_else(patologia == "Total", 2L, 0L)) %>%
   arrange(order, patologia) %>%
   select(-order)
 
 # Etiquetas para gt
-labels_33 <- list(
+labels_34 <- list(
   patologia = "Enfermedad de base",
   Aplazamientos= "Núm",
   Solicitudes = "Solicitudes",
@@ -2906,13 +3009,13 @@ labels_33 <- list(
 )
 
 # Crear tabla gt
-t33 <- tabla33 %>%
+t34 <- tabla34 %>%
   gt() %>%
   tab_header(
     title = "Aplazamientos por enfermedad de base",
     subtitle = "Núm, solicitudes y tasa de aplazamiento (%) por enfermedad de base"
   ) %>%
-  cols_label(.list = labels_33) %>%
+  cols_label(.list = labels_34) %>%
   cols_align(
     align = "center",
     columns = -patologia
@@ -2930,45 +3033,45 @@ t33 <- tabla33 %>%
     source_note = "Nota: Elaboración propia."
   )
 
-gtsave(t33, "script_tablas/tablas_def/tabla_33.html")
+gtsave(t34, "script_tablas/tablas_def/tabla_34.html")
 
-### Tabla 34: Tasa de aplazamientos frente a solicitudes totales (n y %), histórico 2021-2024
-tabla_34 <- tibble::tibble(
+### Tabla 35: Tasa de aplazamientos frente a solicitudes totales (n y %), histórico 2021-2024
+tabla_35 <- tibble::tibble(
   Año = c("2021", "2022", "2023", "2024"),
   Aplazamientos_totales = c(6, 22, 33, 50),  
   Solicitudes_totales = c(173, 576, 766, 917)   
 )
 
 # Calcular tasa de aplazamientos por año
-tabla_34 <- tabla_34 %>%
+tabla_35 <- tabla_35 %>%
   mutate(
     Tasa_aplazamientos = round(Aplazamientos_totales / Solicitudes_totales * 100, 2)
   )
 
 # Añadir fila total
-fila_total_34 <- tibble::tibble(
+fila_total_35 <- tibble::tibble(
   Año = "Total",
-  Aplazamientos_totales = sum(tabla_34$Aplazamientos_totales, na.rm = TRUE),
-  Solicitudes_totales = sum(tabla_34$Solicitudes_totales, na.rm = TRUE),
-  Tasa_aplazamientos = round(sum(tabla_34$Aplazamientos_totales, na.rm = TRUE) / sum(tabla_34$Solicitudes_totales, na.rm = TRUE) * 100, 2)
+  Aplazamientos_totales = sum(tabla_35$Aplazamientos_totales, na.rm = TRUE),
+  Solicitudes_totales = sum(tabla_35$Solicitudes_totales, na.rm = TRUE),
+  Tasa_aplazamientos = round(sum(tabla_35$Aplazamientos_totales, na.rm = TRUE) / sum(tabla_35$Solicitudes_totales, na.rm = TRUE) * 100, 2)
 )
-tabla_34 <- dplyr::bind_rows(tabla_34, fila_total_34)
+tabla_35 <- dplyr::bind_rows(tabla_35, fila_total_35)
 
 # Etiquetas para gt
-labels_34 <- c(
+labels_35 <- c(
   Año = "Año",
   Aplazamientos_totales = "Aplazamientos totales",
   Solicitudes_totales = "Solicitudes totales",
   Tasa_aplazamientos = "Tasa de aplazamientos (%)"
 )
 
-t34 <- tabla_34 %>%
+t35 <- tabla_35 %>%
   gt() %>%
   tab_header(
     title = "Tasa de aplazamientos frente a solicitudes totales",
     subtitle = "Num y %, histórico 2021-2024"
   ) %>%
-  cols_label(.list = labels_34) %>%
+  cols_label(.list = labels_35) %>%
   cols_align(
     align = "center",
     columns = -Año
@@ -2987,18 +3090,18 @@ t34 <- tabla_34 %>%
     source_note = "Nota: Elaboración propia."
   )
 
-gtsave(t34, "script_tablas/tablas_def/tabla_34.html")
+gtsave(t35, "script_tablas/tablas_def/tabla_35.html")
 
 
-### Tabla 35: Tasa de acortamientos por solicitudes, histórico 2022-2024 (transpuesta)
-tabla_35 <- tibble::tibble(
+### Tabla 36: Tasa de acortamientos por solicitudes, histórico 2022-2024 (transpuesta)
+tabla_36 <- tibble::tibble(
   Indicador = c("Solicitudes totales", "Acortamientos", "Tasa de acortamientos por solicitudes (%)"),
   `2022` = c(576, 82, round(82 / 576 * 100, 2)),
   `2023` = c(68, 766, round(68 / 766 * 100, 2)),
   `2024` = c(117, 917, round(117 / 917 * 100, 2))
 )
 
-t35 <- tabla_35 %>%
+t36 <- tabla_36 %>%
   gt() %>%
   tab_header(
     title = "Tasa de acortamientos por solicitudes, histórico 2022-2024"
@@ -3027,9 +3130,9 @@ t35 <- tabla_35 %>%
     source_note = "Nota: Elaboración propia."
   )
 
-gtsave(t35, "script_tablas/tablas_def/tabla_35.html")
+gtsave(t36, "script_tablas/tablas_def/tabla_36.html")
 
-### Tabla 36: Frecuencia de Donaciones, extracciones y trasplantes de órganos tras la PAM por años 2021-24
+### Tabla 37: Frecuencia de Donaciones, extracciones y trasplantes de órganos tras la PAM por años 2021-24
 df_donantes_organos_año <- data.frame(
   Año = c(2021, 2022, 2023, 2024),
   n_donantes = c(7, 42, 44, 63),
@@ -3068,7 +3171,7 @@ for(col in colnames(df_donantes_organos_año_t)[-1]) {
 }
 
 # Crear tabla gt resaltando la última columna
-t36 <- df_donantes_organos_año_t %>%
+t37 <- df_donantes_organos_año_t %>%
   gt(rowname_col = "Variable") %>%
   tab_header(
     title = "Número de donantes, extracciones y trasplantes",
@@ -3087,5 +3190,5 @@ t36 <- df_donantes_organos_año_t %>%
     source_note = "Fuente: Elaboración propia"
   )
 
-gtsave(t36, "script_tablas/tablas_def/tabla_36.html")
+gtsave(t37, "script_tablas/tablas_def/tabla_37.html")
 

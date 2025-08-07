@@ -52,6 +52,7 @@ mutate(reclamacion=if_else((reclamacion_cgye == 'Si' | resolucion_fav_cgye != ''
     denegado=if_else(
     is.na(fecha_prestacion) & (informe_mr == 'No' | informe_mc == 'No' | informe_cgye == 'No') & resolucion_fav_cgye != 'Si', 1, 0),
     fallecimiento_tramitacion=if_else(fallecimiento_tramitacion == 'Si', 1, 0),
+    revocacion=if_else(revocacion == 'Si', 1, 0),
     fallecimiento_tramitacion_momento=case_when(
       fallecimiento_tramitacion !=1 ~ "No",
       fecha_fallecimiento <= fecha_informe_mr ~ "Antes del informe MR",
@@ -68,7 +69,7 @@ df<-df %>%
         !is.na(fecha_prestacion) ~ "Prestación",
         fallecimiento_tramitacion == 1 ~ "Fallecimiento durante tramitación",
         denegado == 1 ~ "Denegado",
-        revocacion == 1 ~ "Revocado",
+        revocacion == "Si" ~ "Revocado",
         TRUE ~ "Sin datos"
     ))
 
