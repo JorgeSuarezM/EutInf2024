@@ -571,7 +571,7 @@ ggsave("script_figuras/figuras_def/fig9.png", width = 10, height = 12, dpi = 300
 
 # (AP. 5.3.) Figura 10: Prestaciones por ámbito de prestación público-privado y CC. AA. 2024 (barras apiladas por CC. AA.)
 ambito<-c("Público", "Privado")
-porc<-c("98.47", "1.53")
+porc<-c("96.68", "3.32")
 fig10 <- data.frame(ambito, porc)
 
 ggplot(fig10, aes(x = "", y = as.numeric(porc), fill = ambito)) +
@@ -816,7 +816,7 @@ ggplot(fig14) +
 ggsave("script_figuras/figuras_def/fig14.png", width = 10, height = 8, dpi = 300, bg = "transparent")
 
 # (AP. 9.1) Figura 15: Especialidad del MR y MC 2024 (barras)
-order = c("Medicina de Familia", "Oncología", "Neurología", "Medicina Interna", "Geriatría", "Cuidados Paliativos", "Neumología", "Otra")
+order <- c("Medicina de Familia", "Oncología", "Neurología", "Medicina Interna", "Geriatría", "Cuidados Paliativos", "Neumología", "Otra")
 df %>%
     filter(especialidad_mr != "") %>%
 ggplot(., aes(x=factor(especialidad_mr, levels=order))) +
@@ -894,7 +894,7 @@ ggplot(., aes(x=factor(especialidad_mc, levels=order))) +
             "Otra" = "#6B174A"
         )
         ) +
-        labs(title = "Especialidad del médico/a consultor 2024") +
+        labs(title = "Especialidad del médico/a consultor/a 2024") +
         geom_label(
             stat = "count",
             aes(label = after_stat(count), y = after_stat(count), fill = factor(especialidad_mc, levels = order)),
