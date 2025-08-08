@@ -774,7 +774,7 @@ ggsave("script_figuras/figuras_def/fig13.png", width = 10, height = 12, dpi = 30
 
 # (AP. 8.1) Figura 14: Mapa de revocaciones por CC. AA. (puntos)
 fig14 <- df %>%
-    filter(revocacion == "Si") %>%
+    filter(revocacion == 1) %>%
     group_by(ccaa) %>%
     summarise(n = n())
 fig14 <- full_join(fig14, mapCCAA, by = "ccaa") %>%
@@ -818,6 +818,7 @@ ggsave("script_figuras/figuras_def/fig14.png", width = 10, height = 8, dpi = 300
 # (AP. 9.1) Figura 15: Especialidad del MR y MC 2024 (barras)
 order <- c("Medicina de Familia", "Oncología", "Neurología", "Medicina Interna", "Geriatría", "Cuidados Paliativos", "Neumología", "Otra")
 df %>%
+    mutate(especialidad_mr = if_else(especialidad_mr == "cuidados paliativos", "Cuidados Paliativos", especialidad_mr)) %>%
     filter(especialidad_mr != "") %>%
 ggplot(., aes(x=factor(especialidad_mr, levels=order))) +
     geom_bar(aes(fill = factor(especialidad_mr, levels=order))) +
