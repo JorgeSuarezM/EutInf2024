@@ -1034,3 +1034,58 @@ ggplot() +
     )
 
 ggsave("script_figuras/figuras_def/fig16horizontal.png", width = 16, height = 14, dpi = 300, bg = "transparent")
+
+# Figura adicional 17: Mapa de tasa de mortalidad por CC. AA. 2024 (puntos)
+fig17 <- tibble(
+    ccaa = c(
+        "Andalucía", "Aragón", "Asturias", "Canarias", "Cantabria",
+        "Castilla y León", "Castilla-La Mancha", "Cataluña", "Comunidad Valenciana",
+        "Extremadura", "Galicia", "Islas Baleares", "Madrid", "Murcia", "Navarra",
+        "País Vasco", "La Rioja", "Ceuta", "Melilla"
+    ),
+    tasa = NA_real_
+)
+fig17$tasa <- c(
+    0.04, 0.06, 0.05, 0.14, 0.05,
+    0.05, 0.04, 0.21, 0.03, 0.04,
+    0.05, 0.19, 0.12, 0.03, 0.23,
+    0.22, 0.18, 0.00, 0.00
+)
+fig17 <- full_join(fig17, mapCCAA, by = "ccaa")
+
+fig17_centroids <- st_centroid(fig17$geometry)
+fig17_points <- fig17 %>%
+    mutate(centroid = fig17_centroids) %>%
+    st_as_sf()
+
+    ggplot(fig17) +
+        geom_sf(aes(geometry = geometry, fill = log(tasa)), color = "black") +
+        geom_sf(data = fig17_points, aes(geometry = centroid, size = log(tasa)), color = "#6b174a", alpha = .8) +
+        scale_size_continuous(
+            range = c(0, 10),
+            name = "Tasa de mortalidad",
+            labels = function(x) round(exp(x), 2)
+        ) +
+        scale_fill_gradientn(
+            colors = colors_gradient,
+            name = "Tasa de mortalidad",
+            labels = function(x) round(exp(x), 2)
+        ) +
+        theme_minimal(base_size = 14) +
+        theme(
+            panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank(),
+            axis.text = element_blank(),
+            axis.title = element_blank(),
+            axis.ticks = element_blank(),
+            panel.background = element_rect(fill = "transparent", color = NA),
+            plot.background = element_rect(fill = "transparent", color = NA),
+            legend.background = element_rect(fill = "transparent", color = NA)
+        ) +
+        labs(
+            title = "Tasa de mortalidad por CC. AA. 2024",
+            fill = "Tasa de mortalidad"
+        ) +
+        geom_sf(aes(geometry = geometry), fill = NA, color = "black", size = 0.5)
+
+    ggsave("script_figuras/figuras_def/fig17.png", width = 10, height = 8, dpi = 300, bg = "transparent")
