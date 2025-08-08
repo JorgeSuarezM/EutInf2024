@@ -141,7 +141,13 @@ ggplot(df, aes(x=factor(edad, levels=c("<30", "30-39", "40-49", "50-59", "60-69"
 ggsave("script_figuras/figuras_def/fig2.png", width = 8, height = 12, dpi = 300, bg = "transparent")
 
 # (AP. 4.2.) Figura 3: Solicitudes por sexo y CC. AA. 2024 (barras, sin total)
-ggplot(df, aes(x = ccaa, fill = sexo)) +
+# ccaa_order <- df %>% #Para ordenar las CC. AA. por número de solicitudes
+#     group_by(ccaa) %>%
+#     summarise(total = n()) %>%
+#     arrange(desc(total)) %>%
+#     pull(ccaa)
+
+ggplot(df, aes(x = factor(ccaa, levels=ccaa_order), fill = sexo)) +
     geom_bar(position = "dodge") +
     theme_classic() +
     labs(x = element_blank(), y = element_blank(), fill = "Sexo") +
@@ -182,16 +188,17 @@ ggsave("script_figuras/figuras_def/fig3.png", width = 8, height = 12, dpi = 300,
 # (AP. 4.2.) Figura 4: Solicitudes por enfermedad de base 2024 (barras, sin total)
 df <- df %>% mutate(patologia = if_else(patologia == "", "No consta", patologia),
     patologia = if_else(patologia == "Reumatología y patología osteomuscular", "Reumatología/osteomuscular", patologia))
-ggplot(df, aes(x = factor(patologia, levels=c("Neurológica", "Oncológica", "Cardiovascular", "Respiratoria", "Reumatología/osteomuscular", "Pluripatología", "Otra", "No consta")))) + 
+
+ggplot(df, aes(x = factor(patologia, levels=c("Neurológica", "Oncológica", "Pluripatología", "Respiratoria", "Cardiovascular", "Reumatología/osteomuscular", "Otra", "No consta")))) + 
     geom_bar(width = 1, aes(fill = patologia))+
     scale_fill_manual(
         values = c(
             "Neurológica" = "#FDBB63",
             "Oncológica" = "#E8A35F",
-            "Cardiovascular" = "#D38C5B",
+            "Pluripatología" = "#D38C5B",
             "Respiratoria" = "#BE7458",
-            "Reumatología/osteomuscular" = "#A95D54",
-            "Pluripatología" = "#944551",
+            "Cardiovascular" = "#A95D54",
+            "Reumatología/osteomuscular" = "#944551",
             "Otra" = "#7F2E4D",
             "No consta" = "#6B174A"
         )
@@ -223,7 +230,7 @@ ggplot(df, aes(x = factor(patologia, levels=c("Neurológica", "Oncológica", "Ca
     ) +
     labs(title = "Solicitudes por enfermedad de base 2024")
     
-ggsave("script_figuras/figuras_def/fig4.png", width = 10, height = 12, dpi = 300, bg = "transparent")
+ggsave("script_figuras/figuras_def/fig4alt.png", width = 10, height = 12, dpi = 300, bg = "transparent")
 
 # (AP. 4.2.) Figura 5a: Solicitudes nativos/extranjeros 2024 (barras, sin total)
 df %>% 
@@ -265,60 +272,63 @@ ggplot(., aes(x = factor(nativo, levels = c("España", "Extranjero")), fill = na
 ggsave("script_figuras/figuras_def/fig5a.png", width = 8, height = 12, dpi = 300, bg = "transparent")
 
 # (AP. 4.2.) Figura 5b: Solicitudes extranjeros por país de nacimiento 2024 (barras, sin total)
-df %>% filter(pais_nacimiento!="España" & pais_nacimiento!="") %>%
-ggplot(., aes(x = pais_nacimiento, fill = pais_nacimiento)) +
-    geom_bar(width = 1) +
-    theme_classic() +
-    labs(x = element_blank(), y = element_blank()) +
-    scale_x_discrete(expand = c(0, 0)) + 
-    scale_y_continuous(expand = c(0, 0), limits = c(0, 9.5)) +
-    scale_fill_manual(
-        values = c(
-        "Alemania" = "#FDBB63", 
-        "Argentina" = "#F5B261",
-        "Bélgica" = "#EDA960",
-        "Bolivia" = "#E5A15F",
-        "Chile" = "#DE985D",
-        "China" = "#D68F5C",
-        "Colombia" = "#CE875B",
-        "Cuba" = "#C77E59",
-        "Dinamarca" = "#BF7558",
-        "Francia" = "#B76D57",
-        "Irlanda" = "#B06455",
-        "Italia" = "#A85C54",
-        "Noruega" = "#A05353",
-        "Países Bajos" = "#994A51",
-        "Reino Unido" = "#914250",
-        "República Dominicana" = "#89394F",
-        "Rumanía" = "#82304D",
-        "Suiza" = "#7A284C",
-        "Uruguay" = "#721F4B",
-        "Venezuela" = "#6B174A"
-        )
-    ) +
-    geom_label(
-        stat = "count",
-        aes(label = ..count.., y = ..count.., fill = pais_nacimiento),
-        color = "black",
-        alpha = 0.5,
-        label.size = 0.5,
-        show.legend = FALSE,
-        vjust = -0.4
-    ) +
-    theme(
-        legend.position = "none",
-        axis.text.y = element_blank(),
-        axis.ticks.y = element_blank(),
-        axis.line.y = element_blank(),
-        axis.text.x = element_text(angle = 45, hjust = 1, size = 14),
-        plot.margin = margin(t = 10, r = 30, b = 10, l = 30),
-        plot.title = element_text(size = 24),
-        plot.background = element_rect(fill = "transparent", color = NA),
-        panel.background = element_rect(fill = "transparent", color = NA)
-    ) +
-    labs(title = "Solicitudes extranjeros por país de nacimiento 2024")
+df %>%
+    filter(pais_nacimiento != "España" & pais_nacimiento != "") %>%
+    count(pais_nacimiento) %>%
+    arrange(desc(n)) %>%
+    mutate(pais_nacimiento = factor(pais_nacimiento, levels = pais_nacimiento)) %>%
+    ggplot(aes(x = pais_nacimiento, y = n, fill = pais_nacimiento)) +
+        geom_bar(stat = "identity", width = 1) +
+        theme_classic() +
+        labs(x = element_blank(), y = element_blank()) +
+        scale_x_discrete(expand = c(0, 0)) + 
+        scale_y_continuous(expand = c(0, 0), limits = c(0, 9.5)) +
+        scale_fill_manual(
+                values = c(
+                "Reino Unido" = "#FDBB63",
+                "Alemania" = "#F5B261",
+                "Venezuela" = "#EDA960",
+                "Bélgica" = "#E5A15F",
+                "Francia" = "#DE985D",
+                "Países Bajos" = "#D68F5C",
+                "Argentina" = "#CE875B",
+                "Colombia" = "#C77E59",
+                "Rumanía" = "#BF7558",
+                "Chile" = "#B76D57",
+                "China" = "#B06455",
+                "Cuba" = "#A85C54",
+                "Italia" = "#A05353",
+                "Noruega" = "#994A51",
+                "Uruguay" = "#914250",
+                "Bolivia" = "#89394F",
+                "Dinamarca" = "#82304D",
+                "Irlanda" = "#7A284C",
+                "República Dominicana" = "#721F4B",
+                "Suiza" = "#6B174A"
+                )
+        ) +
+        geom_label(
+                aes(label = n, y = n, fill = pais_nacimiento),
+                color = "black",
+                alpha = 0.5,
+                label.size = 0.5,
+                show.legend = FALSE,
+                vjust = -0.4
+        ) +
+        theme(
+                legend.position = "none",
+                axis.text.y = element_blank(),
+                axis.ticks.y = element_blank(),
+                axis.line.y = element_blank(),
+                axis.text.x = element_text(angle = 45, hjust = 1, size = 14),
+                plot.margin = margin(t = 10, r = 30, b = 10, l = 30),
+                plot.title = element_text(size = 24),
+                plot.background = element_rect(fill = "transparent", color = NA),
+                panel.background = element_rect(fill = "transparent", color = NA)
+        ) +
+        labs(title = "Solicitudes extranjeros por país de nacimiento 2024")
 
-ggsave("script_figuras/figuras_def/fig5b.png", width = 12, height = 10, dpi = 300, bg = "transparent")
+ggsave("script_figuras/figuras_def/fig5balt.png", width = 12, height = 10, dpi = 300, bg = "transparent")
 
 # (AP. 4.2.) Figura 6: Mapa de tasa de solicitudes por 100k habitantes por CC. AA. 2024 (escala de colores)
 fig6<-df %>%
@@ -825,15 +835,15 @@ ggplot(., aes(x=factor(especialidad_mr, levels=order))) +
     theme_classic() +
     labs(x=element_blank(), y=element_blank()) +
     scale_x_discrete(expand=c(0,0)) +
-    scale_y_continuous(expand=c(0,0), limits=c(0, 610)) +
+    scale_y_continuous(expand=c(0,0), limits=c(0, 630)) +
     theme(
         axis.line.x = element_blank(),
         axis.line.y = element_blank(),
-        axis.text.x = element_text(angle = 45, hjust = 1, size = 16),
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 20),
         axis.text.y = element_blank(),
         axis.ticks.y = element_blank(),
         legend.position = "none",
-        plot.margin = margin(t = 10, r = 30, b = 10, l = 70)
+        plot.margin = margin(t = 10, r = 30, b = 10, l = 90)
     ) +
     scale_fill_manual(
         values = c(
@@ -853,13 +863,13 @@ ggplot(., aes(x=factor(especialidad_mr, levels=order))) +
             aes(label = after_stat(count), y = after_stat(count), fill = factor(especialidad_mr, levels = order)),
             color = "black",
             alpha = 0.5,
-            size = 5,
+            size = 7,
             label.size = 0.5,
             show.legend = FALSE,
             vjust = -0.4
         ) +
         theme(
-            plot.title = element_text(size = 20, margin = margin(b = 20)),
+            plot.title = element_text(size = 24, margin = margin(b = 20)),
             plot.background = element_rect(fill = "transparent", color = NA),
             panel.background = element_rect(fill = "transparent", color = NA)
         )
@@ -877,11 +887,11 @@ ggplot(., aes(x=factor(especialidad_mc, levels=order))) +
     theme(
         axis.line.x = element_blank(),
         axis.line.y = element_blank(),
-        axis.text.x = element_text(angle = 45, hjust = 1, size = 16),
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 20),
         axis.text.y = element_blank(),
         axis.ticks.y = element_blank(),
         legend.position = "none",
-        plot.margin = margin(t = 10, r = 30, b = 10, l = 70)
+        plot.margin = margin(t = 10, r = 30, b = 10, l = 90)
     ) +
     scale_fill_manual(
         values = c(
@@ -901,13 +911,13 @@ ggplot(., aes(x=factor(especialidad_mc, levels=order))) +
             aes(label = after_stat(count), y = after_stat(count), fill = factor(especialidad_mc, levels = order)),
             color = "black",
             alpha = 0.5,
-            size = 5,
+            size = 7,
             label.size = 0.5,
             show.legend = FALSE,
             vjust = -0.4
         ) +
         theme(
-            plot.title = element_text(size = 20, margin = margin(b = 20)),
+            plot.title = element_text(size = 24, margin = margin(b = 20)),
             plot.background = element_rect(fill = "transparent", color = NA),
             panel.background = element_rect(fill = "transparent", color = NA)
         )
